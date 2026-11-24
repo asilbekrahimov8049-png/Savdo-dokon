@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DO‘KON POS — Professional Savdo va Kassa Boshqaruv Tizimi</title>
+  
+  <!-- FontAwesome Ikonkalar (CDN) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
+  <!-- Maxsus POS uslublari -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-container">
+  
+  <!-- YON MENYU (SIDEBAR) -->
+  <aside class="app-sidebar" id="appSidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <i class="fa-solid fa-cash-register"></i>
+      </div>
+      <div class="brand-info">
+        <h1>DO‘KON POS</h1>
+        <span>Kassa Tizimi</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-view="pos">
+        <i class="fa-solid fa-cart-shopping"></i>
+        <span>Kassa (POS)</span>
+        <span class="hotkey-badge">Alt+1</span>
+      </button>
+
+      <button class="nav-item" data-view="products">
+        <i class="fa-solid fa-box-archive"></i>
+        <span>Mahsulotlar</span>
+        <span class="hotkey-badge">Alt+2</span>
+      </button>
+
+      <button class="nav-item" data-view="history">
+        <i class="fa-solid fa-receipt"></i>
+        <span>Savdolar Tarixi</span>
+        <span class="hotkey-badge">Alt+3</span>
+      </button>
+
+      <button class="nav-item" data-view="reports">
+        <i class="fa-solid fa-file-word"></i>
+        <span>Kunlik Hisobot (Word)</span>
+        <span class="hotkey-badge">Alt+4</span>
+      </button>
+
+      <button class="nav-item" data-view="settings">
+        <i class="fa-solid fa-sliders"></i>
+        <span>Sozlamalar</span>
+        <span class="hotkey-badge">Alt+5</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div><strong>Tezkor tugmalar:</strong></div>
+      <div class="d-flex justify-between"><span>Naqd:</span> <span class="hotkey-badge">F7</span></div>
+      <div class="d-flex justify-between"><span>Karta:</span> <span class="hotkey-badge">F8</span></div>
+      <div class="d-flex justify-between"><span>Terminal:</span> <span class="hotkey-badge">F9</span></div>
+      <div class="d-flex justify-between"><span>Qidiruv:</span> <span class="hotkey-badge">F2</span></div>
+      <div class="d-flex justify-between"><span>Tozalash:</span> <span class="hotkey-badge">F4</span></div>
+      <small style="margin-top: 6px; color: #64748b;">DO‘KON POS v2.0 • 2026</small>
+    </div>
+  </aside>
+
+  <!-- ASOSIY KONTENT -->
+  <main class="app-main">
+    
+    <!-- YUQORI HEADER -->
+    <header class="main-header">
+      <div class="header-left">
+        <button class="mobile-nav-toggle" id="mobileNavToggle" onclick="document.getElementById('appSidebar').classList.toggle('mobile-open')">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="header-shop-title">
+          <span id="appHeaderShopName">DO‘KON POS</span>
+          <span class="badge-online">Tezkor Kassa</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Tezkor Savatcha / To'lov tugmasi -->
+        <button class="header-btn-quick" onclick="window.posManager.proceedToPayment()" title="To‘lovga o‘tish (F9)" style="background: #ecfdf5; color: #065f46; border-color: #a7f3d0;">
+          <i class="fa-solid fa-basket-shopping text-success"></i>
+          <span>Savatcha (<strong id="headerCartCount">0</strong>)</span>
+        </button>
+
+        <button class="header-btn-quick" onclick="window.app.switchView('pos')" title="Yangi savdo boshlash">
+          <i class="fa-solid fa-rotate text-primary"></i>
+          <span>Yangi Savdo</span>
+        </button>
+
+        <div class="header-user-badge">
+          <i class="fa-solid fa-user-check"></i>
+          <span id="headerCashierName">Sotuvchi #1</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ========================================================
+         1. KASSA (POS) EKRANI
+         ======================================================== -->
+    <section class="view-section active" id="view_pos">
+      <div class="pos-screen-layout">
+        
+        <!-- CHAP: DASHBOARD, FILTER VA MAHSULOTLAR -->
+        <div class="pos-catalog-panel">
+          
+          <!-- Bosh sahifa ko'rsatkichlari (Dashboard) -->
+          <div class="pos-dashboard-metrics">
+            <div class="metric-card">
+              <div class="metric-icon green">
+                <i class="fa-solid fa-wallet"></i>
+              </div>
+              <div class="metric-data">
+                <span>Bugungi umumiy savdo</span>
+                <strong id="dashTodaySales">0 so‘m</strong>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon blue">
+                <i class="fa-solid fa-bag-shopping"></i>
+              </div>
+              <div class="metric-data">
+                <span>Bugungi savdolar soni</span>
+                <strong id="dashTodayCount">0</strong>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-icon navy">
+                <i class="fa-solid fa-boxes-stacked"></i>
+              </div>
+              <div class="metric-data">
+                <span>Jami mahsulotlar</span>
+                <strong id="dashTotalProducts">0 ta</strong>
+              </div>
+            </div>
+          </div>
+
+          <!-- Qidiruv maydoni -->
+          <div class="pos-search-bar">
+            <div class="pos-search-box">
+              <i class="fa-solid fa-magnifying-glass"></i>
+              <input type="text" id="posSearchInput" class="pos-search-input" 
+                     placeholder="Mahsulot nomi yoki shtrix-kodini yozing (masalan: Cola, Snickers, 5449...)" autocomplete="off">
+              <span class="search-shortcut-hint">F2 / Enter</span>
+            </div>
+          </div>
+
+          <!-- Kategoriya tugmalari -->
+          <div class="pos-categories-strip" id="categoriesPills">
+            <!-- Dinamik to'ldiriladi -->
+          </div>
+
+          <!-- Mahsulotlar kartochkalari gridi -->
+          <div class="pos-products-container">
+            <div class="pos-products-grid" id="posProductsGrid">
+              <!-- Mahsulotlar kartochkalari JS orqali chiqariladi -->
+            </div>
+          </div>
+
+          <!-- Mobil qurilmalar uchun suzuvchi savatcha tugmasi -->
+          <div class="mobile-cart-float-bar" id="mobileCartFloatBar" onclick="window.posManager.proceedToPayment()">
+            <div class="mobile-float-left">
+              <i class="fa-solid fa-basket-shopping"></i>
+              <span id="mobileFloatCount">0 dona</span>
+            </div>
+            <div class="mobile-float-right">
+              <span id="mobileFloatTotal">0 so‘m</span>
+              <span class="mobile-float-action">To‘lovga o‘tish &rarr;</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- O'NG: SAVATCHA PANELI -->
+        <div class="pos-cart-panel" id="posCartPanel">
+          
+          <div class="cart-panel-header">
+            <div class="cart-header-title">
+              <i class="fa-solid fa-basket-shopping text-primary"></i>
+              <span>Savatcha</span>
+              <span class="cart-total-badge" id="cartTotalCountBadge">0</span>
+            </div>
+            <div style="display: flex; gap: 6px; align-items: center;">
+              <button type="button" class="btn-cart-clear" id="clearCartBtn" onclick="window.posManager.clearCartConfirm()" title="Savatni tozalash (F4)">
+                <i class="fa-solid fa-trash-can"></i>
+                <span>Tozalash</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Savatdagi tovarlar ro'yxati -->
+          <div class="cart-items-scroll" id="cartItemsList">
+            <!-- Dinamik savat elementlari -->
+          </div>
+
+          <!-- Savat yakuniy hisob-kitobi -->
+          <div class="cart-panel-footer">
+            <div class="cart-summary-line">
+              <span>Tanlangan tovarlar:</span>
+              <strong id="cartItemsTypesCount">0 turdagi (0 dona)</strong>
+            </div>
+
+            <div class="cart-total-line">
+              <span>Jami to‘lov:</span>
+              <strong id="cartTotalAmount">0 so‘m</strong>
+            </div>
+
+            <!-- 3 TA BIR BOSISHDA TO'LOV TUGMASI (TEZKOR KASSA) -->
+            <div class="quick-pay-section">
+              <div class="quick-pay-label">
+                <i class="fa-solid fa-bolt text-warning"></i>
+                <span>To‘lov turini bosing (1 bosishda saqlaydi):</span>
+              </div>
+
+              <div class="quick-pay-buttons-stack">
+                <!-- 1. NAQD TO'LOV -->
+                <button type="button" class="btn-instant-pay cash" onclick="window.posManager.instantPay('naqd')" title="Naqd to‘lov (F7)">
+                  <div class="pay-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+                  <div class="pay-text">
+                    <strong>1. NAQD PUL</strong>
+                    <small>Naqd qabul qilish va saqlash</small>
+                  </div>
+                  <span class="pay-key-tag">F7</span>
+                </button>
+
+                <!-- 2. KARTA TO'LOV -->
+                <button type="button" class="btn-instant-pay card" onclick="window.posManager.instantPay('karta')" title="Karta to‘lovi (F8)">
+                  <div class="pay-icon"><i class="fa-solid fa-credit-card"></i></div>
+                  <div class="pay-text">
+                    <strong>2. KARTA</strong>
+                    <small>Humo / Uzcard / Payme / Click</small>
+                  </div>
+                  <span class="pay-key-tag">F8</span>
+                </button>
+
+                <!-- 3. TERMINAL TO'LOV -->
+                <button type="button" class="btn-instant-pay terminal" onclick="window.posManager.instantPay('terminal')" title="Terminal to‘lovi (F9)">
+                  <div class="pay-icon"><i class="fa-solid fa-calculator"></i></div>
+                  <div class="pay-text">
+                    <strong>3. TERMINAL</strong>
+                    <small>Bank POS terminali</small>
+                  </div>
+                  <span class="pay-key-tag">F9</span>
+                </button>
+              </div>
+
+              <!-- Aralash bo'lib to'lash varianti -->
+              <button type="button" class="btn-split-toggle" onclick="window.posManager.openSplitPaymentModal()" title="Naqd va kartani bo‘lib to‘lash">
+                <i class="fa-solid fa-arrows-split-up-and-left"></i>
+                <span>Bo‘lib to‘lash (Naqd + Karta aralash bo‘lsa)</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================
+         2. MAHSULOTLARNI BOSHQARISH EKRANI
+         ======================================================== -->
+    <section class="view-section" id="view_products">
+      <div class="management-layout">
+        
+        <div class="mgmt-header-row">
+          <div class="mgmt-title">
+            <h2><i class="fa-solid fa-boxes-stacked"></i> Mahsulotlarni Boshqarish</h2>
+            <p>Do‘kondagi barcha tovarlarni qo‘shish, narxlarini o‘zgartirish va boshqarish</p>
+          </div>
+
+          <div class="mgmt-actions-bar">
+            <input type="text" id="productMgmtSearch" class="mgmt-search-input" placeholder="Mahsulot yoki kod qidirish...">
+            <select id="productMgmtCategoryFilter" class="mgmt-select">
+              <option value="all">Barcha kategoriyalar</option>
+            </select>
+            <button class="btn-primary" id="openAddProductModalBtn">
+              <i class="fa-solid fa-circle-plus"></i>
+              <span>Yangi Mahsulot</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="data-table-container">
+          <div class="table-header-info">
+            <span id="productsTableCount">Jami: 0 ta mahsulot</span>
+            <small class="text-muted"><i class="fa-solid fa-info-circle"></i> Narxlarni o‘zgartirish uchun tahrirlash tugmasini bosing</small>
+          </div>
+
+          <table class="pos-table">
+            <thead>
+              <tr>
+                <th style="width: 50px;" class="text-center">№</th>
+                <th>Mahsulot nomi</th>
+                <th>Kategoriya</th>
+                <th>Narxi (so‘m)</th>
+                <th>Shtrix-kod / Kod</th>
+                <th>Holat</th>
+                <th style="width: 120px;" class="text-right">Amallar</th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody">
+              <!-- Dinamik to'ldiriladi -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================
+         3. SAVDOLAR TARIXI EKRANI
+         ======================================================== -->
+    <section class="view-section" id="view_history">
+      <div class="management-layout">
+        
+        <div class="mgmt-header-row">
+          <div class="mgmt-title">
+            <h2><i class="fa-solid fa-clock-rotate-left"></i> Savdolar Tarixi</h2>
+            <p>Barcha yakunlangan va bekor qilingan kassa savdolari arxivi</p>
+          </div>
+        </div>
+
+        <!-- Filtrlar paneli -->
+        <div class="history-filters-bar">
+          <div class="history-filter-top">
+            <div class="history-date-filters">
+              <button class="history-date-filter-btn active" data-filter="today">Bugun</button>
+              <button class="history-date-filter-btn" data-filter="yesterday">Kecha</button>
+              <button class="history-date-filter-btn" data-filter="week">Oxirgi 7 kun</button>
+              <button class="history-date-filter-btn" data-filter="month">Shu oy</button>
+              <button class="history-date-filter-btn" data-filter="all">Barcha davr</button>
+              <button class="history-date-filter-btn" data-filter="custom">Sana oralig‘i</button>
+            </div>
+
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="text" id="historySearchInput" class="mgmt-search-input" placeholder="Chek № yoki tovar nomi...">
+              
+              <select id="historyPaymentFilter" class="mgmt-select">
+                <option value="all">Barcha to‘lovlar</option>
+                <option value="cash">Naqd</option>
+                <option value="card">Karta</option>
+                <option value="terminal">Terminal</option>
+              </select>
+
+              <select id="historyStatusFilter" class="mgmt-select">
+                <option value="all">Barcha holatlar</option>
+                <option value="completed">Muvaffaqiyatli</option>
+                <option value="cancelled">Bekor qilingan</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="historyCustomDateRange" style="display: none; gap: 10px; align-items: center; padding-top: 8px; border-top: 1px dashed var(--border-color);">
+            <span>Boshlanish:</span>
+            <input type="date" id="historyStartDate" class="mgmt-search-input" style="width: auto;">
+            <span>Tugash:</span>
+            <input type="date" id="historyEndDate" class="mgmt-search-input" style="width: auto;">
+          </div>
+
+          <div id="historyFilteredStats">
+            <!-- Dinamik xulosa -->
+          </div>
+        </div>
+
+        <!-- Savdolar jadvali -->
+        <div class="data-table-container">
+          <table class="pos-table">
+            <thead>
+              <tr>
+                <th>Chek №</th>
+                <th>Sana va Vaqt</th>
+                <th>Mahsulotlar</th>
+                <th>Umumiy Summa</th>
+                <th>To‘lov turlari</th>
+                <th>Holat</th>
+                <th style="width: 140px;" class="text-right">Amallar</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <!-- Dinamik to'ldiriladi -->
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================
+         4. KUNLIK SAVDO VA KASSA HISOBOTI (WORD FORMATIDA)
+         ======================================================== -->
+    <section class="view-section" id="view_reports">
+      <div class="management-layout">
+        
+        <div class="mgmt-header-row">
+          <div class="mgmt-title">
+            <h2><i class="fa-solid fa-file-word text-primary"></i> Savdo Hisoboti (Word Formati)</h2>
+            <p>Bugungi sana, har bir mahsulot bo‘yicha Naqd, Karta, Terminal tushumlari va yakuniy umumiy hisobot</p>
+          </div>
+
+          <div class="mgmt-actions-bar">
+            <div class="history-date-filters">
+              <button class="report-period-btn active" data-period="today">Bugun</button>
+              <button class="report-period-btn" data-period="week">Haftalik</button>
+              <button class="report-period-btn" data-period="month">Oylik</button>
+              <button class="report-period-btn" data-period="all">Barchasi</button>
+              <button class="report-period-btn" data-period="custom">Oraliq</button>
+            </div>
+
+            <div id="reportCustomDateBox" style="display: none; gap: 6px; align-items: center;">
+              <input type="date" id="reportStartDate" class="mgmt-search-input" style="width: auto;">
+              <input type="date" id="reportEndDate" class="mgmt-search-input" style="width: auto;">
+            </div>
+
+            <!-- WORD (.doc) YUKLAB OLISH KATTA TUGMASI -->
+            <button class="btn-primary" id="exportWordBtn" style="background: #2563eb; font-size: 15px; padding: 0 22px; height: 46px;">
+              <i class="fa-solid fa-file-word"></i>
+              <span>Word formatida yuklab olish (.doc)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Tushum Kartochkalari -->
+        <div class="reports-kpi-grid">
+          <div class="rep-kpi-card highlight">
+            <span>JAMI UMUMIY SAVDO:</span>
+            <strong id="repKpiPeriodTotal">0 so‘m</strong>
+          </div>
+
+          <div class="rep-kpi-card">
+            <span><i class="fa-solid fa-money-bill-wave text-success"></i> NAQD TUSHUM:</span>
+            <strong id="repKpiCash" class="text-success">0 so‘m</strong>
+          </div>
+
+          <div class="rep-kpi-card">
+            <span><i class="fa-solid fa-credit-card text-primary"></i> KARTA TUSHUMI:</span>
+            <strong id="repKpiCard" class="text-primary">0 so‘m</strong>
+          </div>
+
+          <div class="rep-kpi-card">
+            <span><i class="fa-solid fa-calculator text-warning"></i> TERMINAL TUSHUMI:</span>
+            <strong id="repKpiTerminal" style="color: #d97706;">0 so‘m</strong>
+          </div>
+
+          <div class="rep-kpi-card">
+            <span>Jami savdolar soni:</span>
+            <strong id="repKpiCount">0 ta</strong>
+          </div>
+
+          <div class="rep-kpi-card">
+            <span>O‘rtacha chek miqdori:</span>
+            <strong id="repKpiAvg">0 so‘m</strong>
+          </div>
+        </div>
+
+        <!-- EKRANDA WORD JADVALI VA YAKUNIY UMUMIY HISOBOTI (A4 QOG'OZ KO'RINISHIDA) -->
+        <div id="wordReportContainer">
+          <!-- JS orqali to'liq rasmiy Word hujjati chiziladi -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ========================================================
+         5. SOZLAMALAR VA ZAXIRA EKRANI
+         ======================================================== -->
+    <section class="view-section" id="view_settings">
+      <div class="management-layout">
+        
+        <div class="mgmt-header-row">
+          <div class="mgmt-title">
+            <h2><i class="fa-solid fa-gear"></i> Tizim Sozlamalari va Zaxiralash</h2>
+            <p>Do‘kon rekvizitlari, ma'lumotlar zaxirasi (Backup / Restore)</p>
+          </div>
+        </div>
+
+        <div class="settings-grid">
+          
+          <!-- Do'kon parametrlari -->
+          <div class="settings-card">
+            <h3 style="margin-bottom: 16px; font-weight: 800; color: var(--primary-navy);">
+              <i class="fa-solid fa-store"></i> Do‘kon va Kassa Rekvizitlari
+            </h3>
+
+            <form id="settingsForm">
+              <div class="form-group">
+                <label>Do‘kon / Savdo markazi nomi:</label>
+                <input type="text" id="settingShopName" class="form-control" required>
+              </div>
+
+              <div class="form-group">
+                <label>Do‘kon manzili:</label>
+                <input type="text" id="settingShopAddress" class="form-control">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div class="form-group">
+                  <label>Telefon raqam:</label>
+                  <input type="text" id="settingShopPhone" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label>STIR / Soliq ID (ixtiyoriy):</label>
+                  <input type="text" id="settingTaxNumber" class="form-control">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Valyuta belgisi:</label>
+                <input type="text" id="settingCurrency" class="form-control" value="so‘m">
+              </div>
+
+              <div class="form-group form-checkbox-row">
+                <input type="checkbox" id="settingSoundEnabled" checked>
+                <label for="settingSoundEnabled" style="margin: 0; cursor: pointer;">
+                  Tovushli bildirishnomalar (Web Audio signallari) yoqilgan bo‘lsin
+                </label>
+              </div>
+
+              <div style="margin-top: 24px;">
+                <button type="submit" class="btn-primary btn-success" style="height: 48px; padding: 0 28px;">
+                  <i class="fa-solid fa-floppy-disk"></i>
+                  <span>Sozlamalarni Saqlash</span>
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Zaxira nusxa va Cloud adapter -->
+          <div style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="settings-card">
+              <h3 style="margin-bottom: 12px; font-weight: 800; color: var(--primary-navy);">
+                <i class="fa-solid fa-database"></i> Ma'lumotlar Xavfsizligi
+              </h3>
+              <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 16px;">
+                Barcha mahsulotlar, savdolar tarixi va hisobotlar kompyuteringiz omborida doimiy saqlanadi. Saytni yopib ochganda ma'lumotlar yo‘qolmaydi.
+              </p>
+
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn-primary" id="exportBackupBtn">
+                  <i class="fa-solid fa-download"></i>
+                  <span>Zaxira Nusxani Yuklab Olish (Backup JSON)</span>
+                </button>
+
+                <input type="file" id="importBackupFileInput" accept=".json" style="display: none;">
+                <button class="btn-primary btn-secondary" id="importBackupTriggerBtn">
+                  <i class="fa-solid fa-upload"></i>
+                  <span>Zaxiradan Qayta Tiklash (Restore JSON)</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="settings-card">
+              <h3 style="margin-bottom: 12px; font-weight: 800; color: var(--primary-navy);">
+                <i class="fa-solid fa-circle-info"></i> Eslatma
+              </h3>
+              <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5;">
+                • Printerdan chiqarish butunlay o‘chirilgan.<br>
+                • Barcha savdolar hisoboti <strong>Word (.doc)</strong> formatida tayyorlanadi.<br>
+                • Kassa ekrani va savatcha doimiy faol.
+              </p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+</div>
+
+<!-- ========================================================
+     MODALLAR
+     ======================================================== -->
+
+<!-- 1. TO'LOV MODALI (3 XIL TO'LOV VA SPLIT-PAYMENT) -->
+<div class="pos-modal" id="paymentModal">
+  <div class="modal-content-payment">
+    
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-cash-register"></i> Savdoni Yakunlash — To‘lov Qabul Qilish</h2>
+      <button class="modal-close-btn" id="closePaymentModalBtn">&times;</button>
+    </div>
+
+    <div class="payment-modal-body">
+      
+      <!-- Jami to'lov banneri -->
+      <div class="payment-due-banner">
+        <div>
+          <span>Jami to‘lanishi kerak bo‘lgan summa:</span>
+          <div style="font-size: 13px; color: var(--text-muted);">To‘lov turini bosing — avtomatik saqlanadi</div>
+        </div>
+        <strong id="modalTotalDue">0 so‘m</strong>
+      </div>
+
+      <!-- 3 TA BIR BOSISHDA TO'LOV KARTALARI (PUL KIRITISH SHART EMAS) -->
+      <div class="modal-direct-payment-grid">
+        
+        <!-- 1. NAQD PUL -->
+        <button type="button" class="btn-modal-pay-card cash" onclick="window.paymentManager.payAndComplete('cash')" title="Naqd qabul qilish">
+          <div class="m-card-top">
+            <div class="m-card-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+            <div class="m-card-badge">F7</div>
+          </div>
+          <div class="m-card-title">1. NAQD PUL</div>
+          <div class="m-card-desc">Xaridor naqd pul berdi</div>
+          <div class="m-card-amount modalDueAmountText">0 so‘m</div>
+          <div class="m-card-action-btn">
+            <i class="fa-solid fa-check"></i>
+            <span>Naqd deb Saqlash</span>
+          </div>
+        </button>
+
+        <!-- 2. KARTA -->
+        <button type="button" class="btn-modal-pay-card card" onclick="window.paymentManager.payAndComplete('karta')" title="Karta orqali to‘lov">
+          <div class="m-card-top">
+            <div class="m-card-icon"><i class="fa-solid fa-credit-card"></i></div>
+            <div class="m-card-badge">F8</div>
+          </div>
+          <div class="m-card-title">2. KARTA</div>
+          <div class="m-card-desc">Humo / Uzcard / Payme</div>
+          <div class="m-card-amount modalDueAmountText">0 so‘m</div>
+          <div class="m-card-action-btn">
+            <i class="fa-solid fa-check"></i>
+            <span>Karta deb Saqlash</span>
+          </div>
+        </button>
+
+        <!-- 3. TERMINAL -->
+        <button type="button" class="btn-modal-pay-card terminal" onclick="window.paymentManager.payAndComplete('terminal')" title="Bank terminali to‘lovi">
+          <div class="m-card-top">
+            <div class="m-card-icon"><i class="fa-solid fa-calculator"></i></div>
+            <div class="m-card-badge">F9</div>
+          </div>
+          <div class="m-card-title">3. TERMINAL</div>
+          <div class="m-card-desc">Bank POS-terminali</div>
+          <div class="m-card-amount modalDueAmountText">0 so‘m</div>
+          <div class="m-card-action-btn">
+            <i class="fa-solid fa-check"></i>
+            <span>Terminal deb Saqlash</span>
+          </div>
+        </button>
+
+      </div>
+
+      <!-- Ixtiyoriy: Mabodo bo'lib to'lash kerak bo'lsa (Akkordeon) -->
+      <details class="split-details-accordion">
+        <summary><i class="fa-solid fa-sliders"></i> Qo‘shimcha: Agar pulni bo‘lib to‘lash (Naqd + Karta aralash) kerak bo‘lsa bosing</summary>
+        
+        <div class="split-manual-box">
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px;">
+            <div class="payment-type-card" id="payCard_cash">
+              <label style="font-weight: bold; font-size: 13px; color: #166534;"><i class="fa-solid fa-money-bill-wave"></i> Naqd summa:</label>
+              <input type="number" id="payCashInput" class="pay-input" data-type="cash" placeholder="0" min="0" style="margin-top: 4px;">
+            </div>
+            <div class="payment-type-card" id="payCard_card">
+              <label style="font-weight: bold; font-size: 13px; color: #1e40af;"><i class="fa-solid fa-credit-card"></i> Karta summa:</label>
+              <input type="number" id="payCardInput" class="pay-input" data-type="card" placeholder="0" min="0" style="margin-top: 4px;">
+            </div>
+            <div class="payment-type-card" id="payCard_terminal">
+              <label style="font-weight: bold; font-size: 13px; color: #92400e;"><i class="fa-solid fa-calculator"></i> Terminal summa:</label>
+              <input type="number" id="payTerminalInput" class="pay-input" data-type="terminal" placeholder="0" min="0" style="margin-top: 4px;">
+            </div>
+          </div>
+
+          <div id="paymentStatusBox" class="payment-status-box success" style="margin-top: 12px;"></div>
+
+          <div style="display: flex; justify-content: flex-end; margin-top: 10px;">
+            <button type="button" class="btn-complete-sale" id="completeSaleBtn" style="height: 44px; font-size: 14px;">
+              <i class="fa-solid fa-check-double"></i>
+              <span>Bo‘lib to‘langan savdoni saqlash</span>
+            </button>
+          </div>
+        </div>
+      </details>
+
+    </div>
+
+    <!-- Modal pastki qismi -->
+    <div class="payment-modal-footer">
+      <div style="font-size: 13px; color: var(--text-muted);">
+        Ortiqcha pul kiritish shart emas — yuqoridagi 3 ta to‘lovdan birini bosing, kassa darhol saqlaydi.
+      </div>
+      <button type="button" class="btn-primary btn-secondary" onclick="window.paymentManager.closePaymentModal()">
+        Yopish
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- 2. MAHSULOT QO'SHISH / TAHRIRLASH MODALI -->
+<div class="pos-modal" id="productFormModal">
+  <div class="modal-content-payment" style="max-width: 520px;">
+    <div class="modal-header">
+      <h2 id="productModalTitle"><i class="fa-solid fa-box"></i> Yangi Mahsulot Qo‘shish</h2>
+      <button class="modal-close-btn" id="closeProductModalBtn">&times;</button>
+    </div>
+
+    <form id="productForm" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+      <div class="form-group">
+        <label>Mahsulot nomi: <span class="text-danger">*</span></label>
+        <input type="text" id="prodModalName" class="form-control" placeholder="Masalan: Coca-Cola 0.5L" required>
+      </div>
+
+      <div class="form-group">
+        <label>Mahsulot narxi (so‘m): <span class="text-danger">*</span></label>
+        <input type="number" id="prodModalPrice" class="form-control" placeholder="Masalan: 9000" min="0" step="100" required>
+      </div>
+
+      <div class="form-group">
+        <label>Kategoriya: <span class="text-danger">*</span></label>
+        <select id="prodModalCategory" class="form-control" required>
+          <!-- Toifalar ro'yxati -->
+        </select>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 12px;">
+        <div class="form-group">
+          <label>Shtrix-kod / Kod:</label>
+          <input type="text" id="prodModalBarcode" class="form-control" placeholder="Masalan: 5449000000996">
+        </div>
+        <div class="form-group">
+          <label>O‘lchov birligi:</label>
+          <select id="prodModalUnit" class="form-control">
+            <option value="dona">dona</option>
+            <option value="kg">kg</option>
+            <option value="litr">litr</option>
+            <option value="quti">quti</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px;">
+        <button type="button" class="btn-primary btn-secondary" id="cancelProductFormBtn">Bekor qilish</button>
+        <button type="submit" class="btn-primary btn-success">
+          <i class="fa-solid fa-floppy-disk"></i>
+          <span>Saqlash</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- 3. SAVDO TAFSILOTI MODALI (DETAIL) -->
+<div class="pos-modal" id="saleDetailModal">
+  <div class="modal-content-payment" style="max-width: 600px;">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-file-invoice-dollar"></i> Savdo Tafsilotlari</h2>
+      <button class="modal-close-btn" id="closeSaleDetailModalBtn">&times;</button>
+    </div>
+
+    <div id="saleDetailContent" style="padding: 24px; overflow-y: auto; max-height: 80vh;">
+      <!-- JS orqali to'ldiriladi -->
+    </div>
+  </div>
+</div>
+
+<!-- TOAST BILDIRISHNOMALAR KONTEYNERI -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- POS SKRIPTLARI -->
+<script src="js/storage.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/payment.js"></script>
+<script src="js/pos.js"></script>
+<script src="js/products.js"></script>
+<script src="js/history.js"></script>
+<script src="js/reports.js"></script>
+<script src="js/app.js"></script>
+
+</body>
+</html>
