@@ -119,6 +119,9 @@ class ReceiptManager {
     `;
 
     modal.classList.add('active');
+    if (window.app && window.app.pushNavState) {
+      window.app.pushNavState({ view: window.app.currentView, modal: 'receiptModal' });
+    }
   }
 
   closeReceipt() {
