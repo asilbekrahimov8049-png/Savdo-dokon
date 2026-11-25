@@ -4,6 +4,12 @@
  * Chiqish tasdiqlashi, modal va bildirishnomalar, zaxira nusxalash.
  */
 
+const AUTH_CONFIG = {
+  loginNormalized: 'asilbek',
+  displayUser: 'Asilbek',
+  passHash: 'cf2e9bde'
+};
+
 class AppController {
   constructor() {
     this.currentView = 'pos'; // 'pos', 'products', 'history', 'reports', 'settings'
@@ -34,6 +40,98 @@ class AppController {
     this.initBrowserHistory();
     this.updateHeaderBackState();
     this.checkIconFontFallback();
+    this.checkAuthOnLoad();
+  }
+
+  hashPin(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return (h >>> 0).toString(16);
+  }
+
+  isAuthenticated() {
+    try {
+      return sessionStorage.getItem('pos_auth_ok') === '1' || localStorage.getItem('pos_auth_remember') === '1';
+    } catch (e) {
+      return false;
+    }
+  }
+
+  checkAuthOnLoad() {
+    const lockScreen = document.getElementById('exitLockScreen');
+    const cashierEl = document.getElementById('headerCashierName');
+    const lockShopName = document.getElementById('exitLockShopName');
+    if (lockShopName) lockShopName.textContent = this.settings.shopName || 'DO‘KON POS';
+
+    if (this.isAuthenticated()) {
+      if (lockScreen) lockScreen.classList.remove('active');
+      if (cashierEl) cashierEl.textContent = AUTH_CONFIG.displayUser;
+    } else {
+      if (lockScreen) lockScreen.classList.add('active');
+      setTimeout(() => document.getElementById('authLoginInput')?.focus(), 100);
+    }
+  }
+
+  handleLoginSubmit(e) {
+    if (e) e.preventDefault();
+    const loginInput = document.getElementById('authLoginInput');
+    const passInput = document.getElementById('authPasswordInput');
+    const rememberChk = document.getElementById('authRememberMe');
+    const errBox = document.getElementById('authErrorBox');
+    const card = document.querySelector('.exit-lock-card');
+
+    const loginVal = (loginInput?.value || '').trim().toLowerCase();
+    const passVal = (passInput?.value || '').trim();
+
+    if (loginVal === AUTH_CONFIG.loginNormalized && this.hashPin(passVal) === AUTH_CONFIG.passHash) {
+      try {
+        sessionStorage.setItem('pos_auth_ok', '1');
+        if (rememberChk?.checked) {
+          localStorage.setItem('pos_auth_remember', '1');
+        } else {
+          localStorage.removeItem('pos_auth_remember');
+        }
+      } catch (err) {}
+
+      if (errBox) errBox.style.display = 'none';
+      if (passInput) passInput.value = '';
+      const cashierEl = document.getElementById('headerCashierName');
+      if (cashierEl) cashierEl.textContent = AUTH_CONFIG.displayUser;
+
+      document.getElementById('exitLockScreen')?.classList.remove('active');
+      if (window.soundService) window.soundService.playSuccess();
+      this.goHome();
+      this.showToast(`Xush kelibsiz, ${AUTH_CONFIG.displayUser}! Kassa ishga tayyor.`, 'success');
+    } else {
+      if (window.soundService) window.soundService.playError();
+      if (errBox) {
+        errBox.textContent = 'Login yoki parol noto‘g‘ri! Qaytadan tekshirib kiriting.';
+        errBox.style.display = 'flex';
+      }
+      if (card) {
+        card.classList.remove('shake');
+        void card.offsetWidth;
+        card.classList.add('shake');
+      }
+      if (passInput) {
+        passInput.value = '';
+        passInput.focus();
+      }
+    }
+  }
+
+  togglePasswordVisibility() {
+    const passInput = document.getElementById('authPasswordInput');
+    const eyeIcon = document.getElementById('authEyeIcon');
+    if (!passInput) return;
+    const isHidden = passInput.type === 'password';
+    passInput.type = isHidden ? 'text' : 'password';
+    if (eyeIcon) {
+      eyeIcon.className = isHidden ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+    }
   }
 
   checkIconFontFallback() {
@@ -258,15 +356,32 @@ class AppController {
 
     if (confirmed) {
       this.closeMobileSidebar();
+      try {
+        sessionStorage.removeItem('pos_auth_ok');
+        localStorage.removeItem('pos_auth_remember');
+      } catch (e) {}
+
       const lockScreen = document.getElementById('exitLockScreen');
       const lockShopName = document.getElementById('exitLockShopName');
+      const subtitle = document.getElementById('exitLockSubtitle');
+      const passInput = document.getElementById('authPasswordInput');
+      const errBox = document.getElementById('authErrorBox');
+
       if (lockShopName) lockShopName.textContent = this.settings.shopName || 'DO‘KON POS';
+      if (subtitle) subtitle.textContent = 'Tizimdan xavfsiz chiqildi. Qayta kirish uchun login va parolni kiriting.';
+      if (passInput) passInput.value = '';
+      if (errBox) errBox.style.display = 'none';
       if (lockScreen) lockScreen.classList.add('active');
       this.showToast('Tizimdan xavfsiz chiqildi.', 'info');
+      setTimeout(() => document.getElementById('authLoginInput')?.focus(), 120);
     }
   }
 
   reenterPos() {
+    if (!this.isAuthenticated()) {
+      document.getElementById('authLoginInput')?.focus();
+      return;
+    }
     const lockScreen = document.getElementById('exitLockScreen');
     if (lockScreen) lockScreen.classList.remove('active');
     this.goHome();
@@ -538,8 +653,17 @@ class AppController {
       window.receiptManager?.closeReceipt();
     });
 
+    // Login formasi
+    const authForm = document.getElementById('authLoginForm');
+    if (authForm) {
+      authForm.addEventListener('submit', (e) => this.handleLoginSubmit(e));
+    }
+
     // Klaviatura tezkor tugmalari
     window.addEventListener('keydown', (e) => {
+      if (document.getElementById('exitLockScreen')?.classList.contains('active')) {
+        return;
+      }
       if (e.key === 'Escape') {
         const confirmModal = document.getElementById('confirmActionModal');
         if (confirmModal && confirmModal.classList.contains('active')) {
