@@ -4033,14 +4033,18 @@ html, body {
 
 /* CHOP ETISH: HISOBOT YOKI CHEK */
 @media print {
-  body.printing-report * {
+  body.printing-report *,
+  body.printing-ai-report * {
     visibility: hidden;
   }
   body.printing-report #printableReportArea,
-  body.printing-report #printableReportArea * {
+  body.printing-report #printableReportArea *,
+  body.printing-ai-report #printableAiReportArea,
+  body.printing-ai-report #printableAiReportArea * {
     visibility: visible;
   }
-  body.printing-report #printableReportArea {
+  body.printing-report #printableReportArea,
+  body.printing-ai-report #printableAiReportArea {
     position: absolute;
     left: 0;
     top: 0;
@@ -4216,7 +4220,7 @@ html, body {
   /* MOBIL PASTKI NAVIGATSIYA */
   .mobile-bottom-nav {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     position: fixed;
     bottom: 0;
     left: 0;
@@ -4237,8 +4241,9 @@ html, body {
     align-items: center;
     justify-content: center;
     gap: 3px;
-    font-size: 10.5px;
+    font-size: 9.5px;
     font-weight: 700;
+    padding: 0 2px;
     cursor: pointer;
   }
   .mobile-bottom-btn i {
@@ -4412,6 +4417,572 @@ body.no-fa .fa-bolt::before { content: "⚡"; }
 body.no-fa .fa-layer-group::before { content: "▤"; }
 body.no-fa .fa-arrow-up-wide-short::before { content: "⇅"; }
 body.no-fa .fa-circle-plus::before { content: "+"; }
+body.no-fa .fa-camera-retro::before { content: "📸"; }
+body.no-fa .fa-wand-magic-sparkles::before { content: "✨"; }
+body.no-fa .fa-cubes::before { content: "📦"; }
+body.no-fa .fa-folder-open::before { content: "📂"; }
+body.no-fa .fa-rotate-right::before { content: "↻"; }
+body.no-fa .fa-check-double::before { content: "✓"; }
+body.no-fa .fa-link::before { content: "🔗"; }
+body.no-fa .fa-keyboard::before { content: "⌨"; }
+
+/* ========================================================
+   10. OMBOR QOLDIG'I VA AI RASM ORQALI HISOBOT (VIEW_AI_REPORT)
+   ======================================================== */
+.prod-card-stock-pill {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  white-space: nowrap;
+}
+.prod-card-stock-pill.low {
+  background: #fffbeb;
+  color: #b45309;
+  border-color: #fde68a;
+}
+.prod-card-stock-pill.empty {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+.badge-stock {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.badge-stock.ok { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+.badge-stock.low { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+.badge-stock.empty { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+
+.ai-workspace-grid {
+  display: grid;
+  grid-template-columns: 380px minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+  width: 100%;
+  max-width: 100%;
+}
+
+.ai-workspace-grid > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.ai-card-panel {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.ai-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ai-panel-head h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--primary-navy);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ai-meta-inputs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.ai-drop-zone {
+  position: relative;
+  border: 2px dashed #94a3b8;
+  border-radius: var(--radius-md);
+  background: #f8fafc;
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: border-color 0.2s, background 0.2s;
+  cursor: pointer;
+}
+
+.ai-drop-zone:hover,
+.ai-drop-zone.drag-over {
+  border-color: var(--accent-blue);
+  background: #eff6ff;
+}
+
+.ai-drop-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 24px 16px;
+  gap: 10px;
+}
+
+.ai-drop-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  background: #dbeafe;
+  color: var(--accent-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+
+.ai-drop-empty p {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--primary-navy);
+}
+
+.ai-drop-empty small {
+  font-size: 12px;
+  color: var(--text-muted);
+  max-width: 280px;
+}
+
+.ai-upload-btn-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.ai-drop-preview {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  gap: 10px;
+}
+
+.ai-drop-preview img {
+  width: 100%;
+  max-height: 360px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  background: #0f172a;
+}
+
+.ai-preview-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+
+.ai-analyzing-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(3px);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  text-align: center;
+  z-index: 5;
+}
+
+.ai-scan-spinner {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.25);
+  border-top-color: var(--primary-green);
+  animation: aiSpin 0.85s linear infinite;
+}
+
+@keyframes aiSpin {
+  to { transform: rotate(360deg); }
+}
+
+.ai-analyze-btn {
+  width: 100%;
+  height: 48px;
+  font-size: 15px;
+  justify-content: center;
+  background: linear-gradient(135deg, #2563eb, #1e40af);
+}
+
+.ai-analyze-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.ai-status-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.ai-status-notice.success { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+.ai-status-notice.warning { background: #fffbeb; border: 1px solid #fde68a; color: #92400e; }
+.ai-status-notice.error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+.ai-status-notice.info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+
+.ai-verify-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.ai-verify-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.ai-verify-table th {
+  background: #f8fafc;
+  color: var(--text-muted);
+  font-weight: 700;
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+  text-align: left;
+}
+
+.ai-verify-table td {
+  padding: 8px;
+  border-bottom: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.ai-row-warn { background: #fffdf5; }
+.ai-row-error { background: #fff5f5; }
+
+.ai-cell-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #ffffff;
+  color: var(--primary-navy);
+  outline: none;
+}
+
+.ai-cell-input:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.14);
+}
+
+.ai-cell-num {
+  min-width: 72px;
+  text-align: right;
+  font-family: monospace;
+}
+
+.ai-cell-name {
+  min-width: 150px;
+}
+
+.ai-cell-input.cell-missing {
+  border-color: #f59e0b;
+  background: #fffbeb;
+}
+
+.ai-cat-match {
+  display: block;
+  font-size: 10.5px;
+  color: var(--green-hover);
+  margin-top: 2px;
+}
+
+.ai-row-status-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.ai-status-pill {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.ai-badge-ok { background: #ecfdf5; color: #047857; }
+.ai-badge-calc { background: #eff6ff; color: #1d4ed8; }
+.ai-badge-warn { background: #fef3c7; color: #92400e; }
+.ai-badge-err { background: #fee2e2; color: #b91c1c; }
+
+.ai-draft-summary-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ai-sum-chip {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 7px 12px;
+  font-size: 12.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.ai-sum-chip.sold strong { color: #166534; }
+.ai-sum-chip.rem strong { color: #1e40af; }
+.ai-sum-chip.total { background: #eff6ff; border-color: #93c5fd; }
+.ai-sum-chip.total strong { color: #1e3a8a; font-size: 14px; }
+
+.ai-review-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-color);
+}
+
+.ai-review-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ai-report-bottom-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 10px;
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+}
+
+.ai-report-bottom-summary .sum-highlight {
+  color: #1e3a8a;
+  font-size: 14.5px;
+}
+
+.ai-attached-photo-box {
+  margin-top: 12px;
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  background: #f8fafc;
+}
+
+.ai-attached-photo-box summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary-blue);
+}
+
+.ai-attached-photo-img {
+  margin-top: 10px;
+  max-width: 100%;
+  max-height: 420px;
+  border-radius: var(--radius-sm);
+  display: block;
+}
+
+/* AI HISOBOTLAR TARIXI */
+.ai-history-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 12px;
+}
+
+.ai-history-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 32px 16px;
+  color: var(--text-muted);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md);
+}
+
+.ai-history-empty i {
+  font-size: 36px;
+  color: #cbd5e1;
+  margin-bottom: 8px;
+}
+
+.ai-history-card {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background: #ffffff;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+
+.ai-history-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: var(--shadow-sm);
+}
+
+.ai-hist-thumb-wrap {
+  width: 64px;
+  height: 76px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  background: #f1f5f9;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.ai-hist-thumb-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ai-hist-no-img {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-size: 22px;
+}
+
+.ai-hist-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ai-hist-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.ai-hist-seller {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+.ai-hist-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+.ai-hist-items {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ai-hist-total {
+  font-size: 13px;
+}
+
+.ai-hist-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+@media (max-width: 1024px) {
+  .ai-workspace-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .ai-card-panel {
+    padding: 12px;
+    border-radius: var(--radius-md);
+  }
+  .ai-panel-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ai-review-actions,
+  .ai-confirm-actions,
+  .ai-panel-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .ai-review-actions button,
+  .ai-confirm-actions button,
+  .ai-panel-actions button {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: center;
+  }
+  .ai-review-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ai-meta-inputs-grid {
+    grid-template-columns: 1fr;
+  }
+  .ai-history-list {
+    grid-template-columns: 1fr;
+  }
+  #aiDailyReportPreviewArea {
+    overflow-x: auto;
+    max-width: 100%;
+  }
+}
 
   </style>
 </head>
@@ -4488,6 +5059,12 @@ body.no-fa .fa-circle-plus::before { content: "+"; }
         <i class="fa-solid fa-boxes-stacked"></i>
         <span>Mahsulotlar</span>
         <span class="hotkey-badge">Alt+2</span>
+      </button>
+
+      <button type="button" class="nav-item" data-view="ai_report">
+        <i class="fa-solid fa-camera-retro"></i>
+        <span>Rasm orqali hisobot (AI)</span>
+        <span class="hotkey-badge">Alt+6</span>
       </button>
 
       <button type="button" class="nav-item" data-view="history">
@@ -4789,7 +5366,7 @@ body.no-fa .fa-circle-plus::before { content: "+"; }
                 <th>Kategoriya</th>
                 <th>Narxi</th>
                 <th>Kod</th>
-                <th>Holat</th>
+                <th>Qoldiq / Holat</th>
                 <th style="width: 110px;" class="text-right">Amallar</th>
               </tr>
             </thead>
@@ -5095,6 +5672,211 @@ body.no-fa .fa-circle-plus::before { content: "+"; }
       </div>
     </section>
 
+    <!-- ========================================================
+         6. RASM ORQALI HISOBOT KIRITISH (AI OCR VA OMBOR)
+         ======================================================== -->
+    <section class="view-section" id="view_ai_report">
+      <div class="management-layout">
+
+        <div class="subpage-nav-strip">
+          <button type="button" class="btn-sub-back" onclick="window.app.goBack()">
+            <i class="fa-solid fa-arrow-left"></i> Orqaga
+          </button>
+          <button type="button" class="btn-sub-home" onclick="window.app.goHome()">
+            <i class="fa-solid fa-house"></i> Bosh sahifa
+          </button>
+        </div>
+
+        <div class="mgmt-header-row">
+          <div class="mgmt-title">
+            <h2><i class="fa-solid fa-camera-retro text-primary"></i> Rasm Orqali Hisobot Kiritish (AI)</h2>
+            <p>Daftar, kirim-chiqim jadvali yoki mahsulotlar ro‘yxatini yuklang — AI o‘qiydi, hisoblaydi va omborni yangilaydi</p>
+          </div>
+          <div class="mgmt-actions-bar">
+            <button type="button" class="btn-primary btn-secondary" id="aiManualTextBtn">
+              <i class="fa-solid fa-keyboard"></i>
+              <span>Matndan / Qo‘lda kiritish</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- YUKLASH VA TEKSHIRISH MAYDONI -->
+        <div class="ai-workspace-grid">
+
+          <!-- CHAP: RASM YUKLASH VA OLDINDAN KO'RISH -->
+          <div class="ai-card-panel">
+            <div class="ai-panel-head">
+              <h3><i class="fa-solid fa-camera"></i> 1. Daftar rasmini yuklash</h3>
+            </div>
+
+            <div class="ai-meta-inputs-grid">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Hisobot sanasi:</label>
+                <input type="date" id="aiReportDateInput" class="form-control">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label>Mas’ul sotuvchi:</label>
+                <input type="text" id="aiSellerNameInput" class="form-control" placeholder="Masalan: Asilbek">
+              </div>
+            </div>
+
+            <input type="file" id="aiImageFileInput" accept="image/*" style="display: none;">
+            <input type="file" id="aiCameraFileInput" accept="image/*" capture="environment" style="display: none;">
+
+            <div class="ai-drop-zone" id="aiDropZone">
+              <div class="ai-drop-empty" id="aiDropEmptyState">
+                <div class="ai-drop-icon"><i class="fa-solid fa-camera-retro"></i></div>
+                <p>Daftar yoki jadval rasmini bu yerga tashlang</p>
+                <small>Qo‘lda yozilgan daftar, ombor jadvali yoki oldingi hisobot rasmini telefon/kompyuterdan yuklang</small>
+                <div class="ai-upload-btn-group">
+                  <button type="button" class="btn-primary" id="aiPickFileBtn">
+                    <i class="fa-solid fa-upload"></i>
+                    <span>Rasm tanlash</span>
+                  </button>
+                  <button type="button" class="btn-primary btn-success" id="aiCameraBtn">
+                    <i class="fa-solid fa-camera"></i>
+                    <span>Kameradan olish</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="ai-drop-preview" id="aiDropPreviewState" style="display: none;">
+                <img id="aiNotebookPreviewImg" src="" alt="Yuklangan daftar rasmi">
+                <div class="ai-preview-actions">
+                  <button type="button" class="btn-primary btn-secondary" onclick="document.getElementById('aiImageFileInput').click()">
+                    <i class="fa-solid fa-upload"></i> Boshqa rasm
+                  </button>
+                  <button type="button" class="btn-primary btn-danger" id="aiClearImageBtn">
+                    <i class="fa-solid fa-trash-can"></i> Olib tashlash
+                  </button>
+                </div>
+              </div>
+
+              <div class="ai-analyzing-overlay" id="aiAnalyzingOverlay" style="display: none;">
+                <div class="ai-scan-spinner"></div>
+                <strong id="aiAnalyzingText">AI daftar rasmini tahlil qilmoqda...</strong>
+                <small>Qo‘lyozma va raqamlar aniqlanmoqda, biroz kuting</small>
+              </div>
+            </div>
+
+            <button type="button" class="btn-primary ai-analyze-btn" id="aiAnalyzeBtn" disabled>
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+              <span>AI bilan tahlil qilish</span>
+            </button>
+          </div>
+
+          <!-- O'NG: TEKSHIRISH, AVTO HISOB-KITOB VA TASDIQLASH JADVALI -->
+          <div class="ai-card-panel" id="aiReviewSection">
+            <div class="ai-panel-head">
+              <h3><i class="fa-solid fa-check-double text-success"></i> 2. Natijani tekshirish va tasdiqlash</h3>
+              <div class="ai-review-actions">
+                <button type="button" class="btn-primary btn-secondary" id="aiReanalyzeBtn">
+                  <i class="fa-solid fa-rotate-right"></i> Qayta tahlil qilish
+                </button>
+                <button type="button" class="btn-primary" id="aiAddRowBtn">
+                  <i class="fa-solid fa-plus"></i> Qator qo‘shish
+                </button>
+              </div>
+            </div>
+
+            <div id="aiStatusNotice" class="ai-status-notice" style="display: none;"></div>
+
+            <div class="ai-verify-table-wrap">
+              <table class="ai-verify-table">
+                <thead>
+                  <tr>
+                    <th style="width: 36px; text-align: center;">№</th>
+                    <th>Mahsulot nomi</th>
+                    <th style="width: 100px;">Narxi (so‘m)</th>
+                    <th style="width: 82px;">Jami</th>
+                    <th style="width: 82px;">Sotildi</th>
+                    <th style="width: 82px;">Qoldiq</th>
+                    <th style="width: 115px; text-align: right;">Jami summa</th>
+                    <th style="width: 190px;">Hisob-kitob holati</th>
+                  </tr>
+                </thead>
+                <tbody id="aiVerifyTableBody"></tbody>
+              </table>
+            </div>
+
+            <div id="aiDraftSummaryStrip" class="ai-draft-summary-strip"></div>
+
+            <div class="ai-review-footer">
+              <label class="form-checkbox-row" style="margin: 0; cursor: pointer;">
+                <input type="checkbox" id="aiUpdateStockCheckbox" checked>
+                <span style="font-size: 13px; font-weight: 600;">Mahsulotlar bo‘limidagi ombor qoldig‘ini ham yangilash</span>
+              </label>
+
+              <div class="ai-review-actions">
+                <button type="button" class="btn-primary btn-secondary" id="aiCancelBtn">
+                  <i class="fa-solid fa-xmark"></i> Bekor qilish
+                </button>
+                <button type="button" class="btn-primary btn-success" id="aiConfirmSaveBtn" disabled>
+                  <i class="fa-solid fa-floppy-disk"></i> Hisobotni tasdiqlash va saqlash
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- TAYYOR KUNLIK HISOBOT (DO'KON KUNLIK SAVDO HISOBOTI) -->
+        <div class="ai-card-panel" id="aiGeneratedReportCard" style="display: none;">
+          <div class="ai-panel-head">
+            <h3><i class="fa-solid fa-file-lines text-primary"></i> Tasdiqlangan Kunlik Savdo Hisoboti</h3>
+            <div class="report-export-btns">
+              <button type="button" class="btn-primary" id="aiExportWordBtn" style="background: #1d4ed8;">
+                <i class="fa-solid fa-file-word"></i> Word (.doc)
+              </button>
+              <button type="button" class="btn-primary" id="aiExportPdfBtn" style="background: #dc2626;">
+                <i class="fa-solid fa-file-pdf"></i> PDF (.pdf)
+              </button>
+              <button type="button" class="btn-primary btn-secondary" id="aiPrintReportBtn">
+                <i class="fa-solid fa-print"></i> Chop etish
+              </button>
+              <button type="button" class="btn-primary btn-secondary" id="closeAiPreviewSectionBtn">
+                Yopish
+              </button>
+            </div>
+          </div>
+          <div id="aiDailyReportPreviewArea"></div>
+        </div>
+
+        <!-- SAQLANGAN AI HISOBOTLAR TARIXI -->
+        <div class="ai-card-panel">
+          <div class="ai-panel-head">
+            <h3><i class="fa-solid fa-folder-open text-warning"></i> Saqlangan Rasm va Hisobotlar Tarixi</h3>
+            <span class="catalog-found-badge" id="aiHistoryCount">0 ta hisobot</span>
+          </div>
+
+          <div class="history-filter-top">
+            <div class="history-date-filters">
+              <button type="button" class="history-date-filter-btn ai-hist-period-btn active" data-period="all">Barchasi</button>
+              <button type="button" class="history-date-filter-btn ai-hist-period-btn" data-period="today">Bugun</button>
+              <button type="button" class="history-date-filter-btn ai-hist-period-btn" data-period="yesterday">Kecha</button>
+              <button type="button" class="history-date-filter-btn ai-hist-period-btn" data-period="week">Haftalik</button>
+              <button type="button" class="history-date-filter-btn ai-hist-period-btn" data-period="month">Oylik</button>
+              <button type="button" class="history-date-filter-btn ai-hist-period-btn" data-period="custom">Oraliq</button>
+            </div>
+
+            <div class="history-inputs-wrap">
+              <input type="text" id="aiHistSearchInput" class="mgmt-search-input" placeholder="Mahsulot nomi, sotuvchi yoki sana...">
+            </div>
+          </div>
+
+          <div id="aiHistCustomRange" style="display: none; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <span>Boshlanish:</span>
+            <input type="date" id="aiHistStartDate" class="mgmt-select">
+            <span>Tugash:</span>
+            <input type="date" id="aiHistEndDate" class="mgmt-select">
+          </div>
+
+          <div class="ai-history-list" id="aiHistoryList"></div>
+        </div>
+
+      </div>
+    </section>
+
   </main>
 </div>
 
@@ -5106,7 +5888,11 @@ body.no-fa .fa-circle-plus::before { content: "+"; }
   </button>
   <button type="button" class="mobile-bottom-btn" data-view="products">
     <i class="fa-solid fa-boxes-stacked"></i>
-    <span>Mahsulotlar</span>
+    <span>Mahsulot</span>
+  </button>
+  <button type="button" class="mobile-bottom-btn" data-view="ai_report">
+    <i class="fa-solid fa-camera-retro"></i>
+    <span>AI Hisobot</span>
   </button>
   <button type="button" class="mobile-bottom-btn" data-view="history">
     <i class="fa-solid fa-clock-rotate-left"></i>
@@ -5304,6 +6090,17 @@ body.no-fa .fa-circle-plus::before { content: "+"; }
         </div>
       </div>
 
+      <div class="form-row-2col">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label>Ombordagi joriy qoldiq:</label>
+          <input type="number" id="prodModalStock" class="form-control" placeholder="Masalan: 30" min="0" step="1">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label>Yangi kirim qo‘shish (+):</label>
+          <input type="number" id="prodModalAddStock" class="form-control" placeholder="Masalan: +20" min="0" step="1">
+        </div>
+      </div>
+
       <div class="modal-form-footer">
         <button type="button" class="btn-primary btn-secondary" id="cancelProductFormBtn">Bekor qilish</button>
         <button type="submit" class="btn-primary btn-success">
@@ -5369,6 +6166,30 @@ body.no-fa .fa-circle-plus::before { content: "+"; }
     <div class="payment-modal-footer">
       <button type="button" class="btn-primary btn-secondary" id="confirmModalCancelBtn">Bekor qilish</button>
       <button type="button" class="btn-primary btn-success" id="confirmModalOkBtn">Tasdiqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- 6. MATNDAN / QO'LDA TEZKOR KIRITISH MODALI -->
+<div class="pos-modal" id="aiManualTextModal">
+  <div class="modal-content-payment" style="max-width: 560px;">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-keyboard"></i> Matndan yoki Qo‘lda Qatorlar Kiritish</h2>
+      <button type="button" class="modal-close-btn" id="closeAiTextModalBtn" title="Yopish">&times;</button>
+    </div>
+    <div style="padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+      <p style="font-size: 13px; color: var(--text-muted); line-height: 1.45;">
+        Har bir qatorga mahsulot nomi va raqamlarni yozing. Masalan:<br>
+        <code>Kartoshkali somsa 6000 30 5</code> (Narxi, Jami, Qoldiq)<br>
+        yoki <code>Go‘shtli somsa 40 8</code> (Jami, Qoldiq — narx katalogdan olinadi)
+      </p>
+      <textarea id="aiManualTextArea" class="form-control form-textarea" rows="7" placeholder="Kartoshkali somsa 6000 30 5&#10;Go‘shtli somsa 8000 40 8&#10;Shirin bolichka 5000 50 15"></textarea>
+    </div>
+    <div class="payment-modal-footer">
+      <button type="button" class="btn-primary btn-secondary" id="cancelAiTextModalBtn">Bekor qilish</button>
+      <button type="button" class="btn-primary btn-success" id="aiParseTextApplyBtn">
+        <i class="fa-solid fa-check"></i> Jadvalga joylash
+      </button>
     </div>
   </div>
 </div>
@@ -5880,6 +6701,11 @@ class StorageService {
       if (!localStorage.getItem('pos_settings')) {
         localStorage.setItem('pos_settings', JSON.stringify(DEFAULT_SETTINGS));
       }
+
+      // 5. AI Rasm orqali hisobotlar tarixi
+      if (!localStorage.getItem('pos_ai_reports')) {
+        localStorage.setItem('pos_ai_reports', JSON.stringify([]));
+      }
     } catch (err) {
       console.warn('Storage initsializatsiyasida ogohlantirish:', err);
     }
@@ -5889,7 +6715,7 @@ class StorageService {
     try {
       localStorage.setItem(key, value);
       // Xavfsizlik uchun muhim ma'lumotlarni avtomatik snapshot qilish
-      if (key === 'pos_products' || key === 'pos_sales') {
+      if (key === 'pos_products' || key === 'pos_sales' || key === 'pos_ai_reports') {
         try {
           localStorage.setItem(`${key}_snapshot`, value);
         } catch (e) {
@@ -6092,6 +6918,13 @@ class StorageService {
     const sales = await this.getSales();
     sales.unshift(sale);
     this.safeSetItem('pos_sales', JSON.stringify(sales));
+
+    // Ombordagi mahsulot qoldig'ini kamaytirish (takroriy kamaymasligi uchun flag bilan)
+    if (sale.status !== 'cancelled') {
+      await this.adjustProductStocksForSale(snapshotItems, -1);
+      sale.stockAdjusted = true;
+      this.safeSetItem('pos_sales', JSON.stringify(sales));
+    }
     return sale;
   }
 
@@ -6100,12 +6933,39 @@ class StorageService {
     const sale = sales.find(s => s.id === saleId);
     if (!sale) throw new Error('Savdo topilmadi: ' + saleId);
 
+    const prevStatus = sale.status;
     sale.status = status;
     sale.cancelReason = cancelReason;
     sale.cancelledAt = status === 'cancelled' ? new Date().toISOString() : null;
 
+    if (prevStatus !== 'cancelled' && status === 'cancelled' && sale.stockAdjusted) {
+      await this.adjustProductStocksForSale(sale.items || [], +1);
+      sale.stockAdjusted = false;
+    }
+
     this.safeSetItem('pos_sales', JSON.stringify(sales));
     return sale;
+  }
+
+  // Savdo bo'lganda yoki bekor qilinganda ombor qoldig'ini yangilash
+  async adjustProductStocksForSale(items, direction = -1) {
+    if (!Array.isArray(items) || items.length === 0) return;
+    const products = await this.getProducts();
+    let changed = false;
+
+    items.forEach(item => {
+      const prod = products.find(p => p.id === item.id || p.name.trim().toLowerCase() === String(item.name || '').trim().toLowerCase());
+      if (prod && prod.stockQty !== null && prod.stockQty !== undefined && !isNaN(Number(prod.stockQty))) {
+        const delta = Number(item.qty || 0) * direction;
+        prod.stockQty = Math.max(0, Number(prod.stockQty) + delta);
+        prod.updatedAt = new Date().toISOString();
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      await this.persistProductsList(products);
+    }
   }
 
   async generateNextReceiptNumber() {
@@ -6163,6 +7023,92 @@ class StorageService {
     return fullSettings;
   }
 
+  // ================= AI RASM ORQALI HISOBOTLAR (AI REPORTS) =================
+
+  async getAiReports() {
+    try {
+      const data = localStorage.getItem('pos_ai_reports') || localStorage.getItem('pos_ai_reports_snapshot');
+      if (!data) return [];
+      const list = JSON.parse(data);
+      for (const rep of list) {
+        if (rep.imageRef && rep.imageRef.startsWith('idb://')) {
+          const key = rep.imageRef.slice(6);
+          if (!this.imageCache[key]) {
+            const img = await this.mediaStore.getImage(key);
+            if (img) this.imageCache[key] = img;
+          }
+          rep.resolvedImage = this.imageCache[key] || '';
+        } else {
+          rep.resolvedImage = rep.imageDataUrl || '';
+        }
+      }
+      return list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } catch (e) {
+      return [];
+    }
+  }
+
+  async findDuplicateAiReport(imageHash, contentSignature, excludeId = null) {
+    const reports = await this.getAiReports();
+    return reports.find(r => {
+      if (excludeId && r.id === excludeId) return false;
+      const hashMatch = !!(imageHash && r.imageHash && r.imageHash === imageHash);
+      const sigMatch = !!(contentSignature && r.contentSignature && r.contentSignature === contentSignature);
+      return hashMatch || sigMatch;
+    }) || null;
+  }
+
+  async persistAiReportsList(reports) {
+    const clean = [];
+    for (const rep of reports) {
+      const { resolvedImage, ...rest } = rep;
+      const imgData = resolvedImage || rest.imageDataUrl || '';
+      if (imgData && imgData.startsWith('data:image')) {
+        const key = `ai_${rest.id}`;
+        const savedIdb = await this.mediaStore.setImage(key, imgData);
+        if (savedIdb) {
+          this.imageCache[key] = imgData;
+          clean.push({ ...rest, imageRef: `idb://${key}`, imageDataUrl: '' });
+          continue;
+        }
+      }
+      clean.push(rest);
+    }
+    this.safeSetItem('pos_ai_reports', JSON.stringify(clean));
+  }
+
+  async addAiReport(report) {
+    const reports = await this.getAiReports();
+    reports.unshift(report);
+    await this.persistAiReportsList(reports);
+    return report;
+  }
+
+  async updateAiReport(updatedReport) {
+    const reports = await this.getAiReports();
+    const idx = reports.findIndex(r => r.id === updatedReport.id);
+    if (idx !== -1) {
+      reports[idx] = { ...reports[idx], ...updatedReport, updatedAt: new Date().toISOString() };
+    } else {
+      reports.unshift(updatedReport);
+    }
+    await this.persistAiReportsList(reports);
+    return updatedReport;
+  }
+
+  async deleteAiReport(reportId) {
+    let reports = await this.getAiReports();
+    const target = reports.find(r => r.id === reportId);
+    if (target && target.imageRef && target.imageRef.startsWith('idb://')) {
+      const key = target.imageRef.slice(6);
+      delete this.imageCache[key];
+      await this.mediaStore.deleteImage(key);
+    }
+    reports = reports.filter(r => r.id !== reportId);
+    await this.persistAiReportsList(reports);
+    return true;
+  }
+
   // ================= ZAXIRA VA QAYTA TIKLASH =================
 
   async exportFullBackup() {
@@ -6175,12 +7121,17 @@ class StorageService {
     const categories = await this.getCategories();
     const sales = await this.getSales();
     const settings = await this.getSettings();
+    const rawAiReports = await this.getAiReports();
+    const aiReports = rawAiReports.map(({ resolvedImage, ...rest }) => ({
+      ...rest,
+      imageDataUrl: resolvedImage || rest.imageDataUrl || ''
+    }));
 
     return {
-      version: '3.0',
+      version: '3.1',
       exportedAt: new Date().toISOString(),
       shopName: settings.shopName || 'DO‘KON POS',
-      data: { products, categories, sales, settings }
+      data: { products, categories, sales, settings, aiReports }
     };
   }
 
@@ -6189,7 +7140,7 @@ class StorageService {
       throw new Error('Yaroqsiz zaxira fayli formati!');
     }
 
-    const { products, categories, sales, settings } = backupData.data;
+    const { products, categories, sales, settings, aiReports } = backupData.data;
     if (Array.isArray(products)) {
       const normalized = products.map(p => ({
         ...p,
@@ -6202,6 +7153,9 @@ class StorageService {
     }
     if (Array.isArray(sales)) {
       this.safeSetItem('pos_sales', JSON.stringify(sales));
+    }
+    if (Array.isArray(aiReports)) {
+      await this.persistAiReportsList(aiReports);
     }
     if (settings) {
       this.safeSetItem('pos_settings', JSON.stringify({ ...DEFAULT_SETTINGS, ...settings }));
@@ -6666,6 +7620,8 @@ class PaymentManager {
 
       this.closePaymentModal();
       window.posManager.clearCart();
+      await window.posManager.loadData();
+      window.posManager.renderProducts();
       window.posManager.closeMobileCart();
       window.posManager.updateDashboardMetrics();
 
@@ -6677,6 +7633,9 @@ class PaymentManager {
       const changeMsg = changeAmount > 0 ? ` • Qaytim: ${window.app.formatMoney(changeAmount)}` : '';
       window.app.showToast(`Savdo saqlandi (${savedSale.receiptNumber}): ${payDetail.join(' + ')}${changeMsg}`, 'success');
 
+      if (window.productsManager) {
+        window.productsManager.loadData().then(() => window.productsManager.renderProductsTable());
+      }
       if (window.historyManager) {
         window.historyManager.loadData().then(() => window.historyManager.renderSalesList());
       }
@@ -7023,6 +7982,11 @@ class POSManager {
             <div class="prod-card-price-row">
               <div class="prod-card-price">${window.app.formatMoney(p.price)}</div>
               <span class="prod-card-unit">/${this.escapeHtml(p.unit || 'dona')}</span>
+              ${p.stockQty !== null && p.stockQty !== undefined
+                ? `<span class="prod-card-stock-pill ${Number(p.stockQty) <= 0 ? 'empty' : (Number(p.stockQty) <= 5 ? 'low' : '')}">
+                     Qoldiq: ${Number(p.stockQty)}
+                   </span>`
+                : ''}
             </div>
 
             <div class="prod-card-action-bar">
@@ -7359,11 +8323,17 @@ class POSManager {
       if (window.soundService) window.soundService.playSuccess();
 
       this.clearCart();
+      await this.loadData();
+      this.renderCategoryCards();
+      this.renderProducts();
       this.updateDashboardMetrics();
       this.closeMobileCart();
 
       window.app.showToast(`${label} to‘lovi (${window.app.formatMoney(totalAmount)}) saqlandi! Chek: ${savedSale.receiptNumber}`, 'success');
 
+      if (window.productsManager) {
+        window.productsManager.loadData().then(() => window.productsManager.renderProductsTable());
+      }
       if (window.historyManager) {
         window.historyManager.loadData().then(() => window.historyManager.renderSalesList());
       }
@@ -7712,8 +8682,13 @@ class ProductsManager {
           <td class="text-muted font-mono" data-label="Kod">
             ${p.barcode ? this.escapeHtml(p.barcode) : '<span class="text-lighter">—</span>'}
           </td>
-          <td data-label="Holat">
-            <span class="badge-status-active"><i class="fa-solid fa-check"></i> Sotuvda</span>
+          <td data-label="Holat / Qoldiq">
+            ${p.stockQty !== null && p.stockQty !== undefined
+              ? `<span class="badge-stock ${Number(p.stockQty) <= 0 ? 'empty' : (Number(p.stockQty) <= 5 ? 'low' : 'ok')}">
+                   <i class="fa-solid fa-cubes"></i> ${Number(p.stockQty)} ${this.escapeHtml(p.unit || 'dona')}
+                 </span>`
+              : `<span class="badge-status-active"><i class="fa-solid fa-check"></i> Sotuvda</span>`
+            }
           </td>
           <td class="text-right" data-label="Amallar">
             <div class="action-buttons-wrap">
@@ -7748,6 +8723,10 @@ class ProductsManager {
       document.getElementById('prodModalDescription').value = product.description || '';
       document.getElementById('prodModalBarcode').value = product.barcode || '';
       document.getElementById('prodModalUnit').value = product.unit || 'dona';
+      const stockInp = document.getElementById('prodModalStock');
+      const addStockInp = document.getElementById('prodModalAddStock');
+      if (stockInp) stockInp.value = (product.stockQty !== null && product.stockQty !== undefined) ? product.stockQty : '';
+      if (addStockInp) addStockInp.value = '';
 
       const resolved = product.resolvedImage || product.image || window.storageService.getCategoryDefaultImage(product.category);
       const isCustom = !!(product.image && (product.image.startsWith('data:image') || product.image.startsWith('idb://')));
@@ -7759,6 +8738,10 @@ class ProductsManager {
       const catId = preselectedCategory && preselectedCategory !== 'all' ? preselectedCategory : 'somsa';
       document.getElementById('prodModalCategory').value = catId;
       document.getElementById('prodModalUnit').value = 'dona';
+      const stockInp = document.getElementById('prodModalStock');
+      const addStockInp = document.getElementById('prodModalAddStock');
+      if (stockInp) stockInp.value = '';
+      if (addStockInp) addStockInp.value = '';
       this.currentUploadedImage = '';
       this.updateModalImagePreview(window.storageService.getCategoryDefaultImage(catId), true);
     }
@@ -7786,6 +8769,12 @@ class ProductsManager {
     const description = document.getElementById('prodModalDescription').value.trim();
     const barcode = document.getElementById('prodModalBarcode').value.trim();
     const unit = document.getElementById('prodModalUnit').value.trim() || 'dona';
+    const rawStock = document.getElementById('prodModalStock')?.value?.trim() || '';
+    const rawAddStock = document.getElementById('prodModalAddStock')?.value?.trim() || '';
+    let stockQty = rawStock !== '' ? Math.max(0, parseFloat(rawStock)) : null;
+    if (rawAddStock !== '' && !isNaN(parseFloat(rawAddStock))) {
+      stockQty = Math.max(0, (stockQty || 0) + parseFloat(rawAddStock));
+    }
 
     if (!name) {
       window.app.showToast('Mahsulot nomini kiriting!', 'warning');
@@ -7809,6 +8798,7 @@ class ProductsManager {
           existing.description = description;
           existing.barcode = barcode;
           existing.unit = unit;
+          existing.stockQty = stockQty;
           existing.image = imageToSave;
 
           await window.storageService.updateProduct(existing);
@@ -7822,6 +8812,7 @@ class ProductsManager {
           description,
           barcode,
           unit,
+          stockQty,
           image: imageToSave
         };
         await window.storageService.addProduct(newProduct);
@@ -8374,7 +9365,12 @@ class HistoryManager {
       await this.loadData();
       this.renderSalesList();
 
+      await window.posManager.loadData();
+      window.posManager.renderProducts();
       window.posManager.updateDashboardMetrics();
+      if (window.productsManager) {
+        window.productsManager.loadData().then(() => window.productsManager.renderProductsTable());
+      }
       if (window.reportsManager) window.reportsManager.refresh();
     } catch (e) {
       console.error(e);
@@ -9463,6 +10459,1500 @@ class ReceiptManager {
 window.receiptManager = new ReceiptManager();
 
 
+/* ===== ai-report.js ===== */
+/**
+ * DO‘KON POS - AI Rasm Orqali Savdo va Ombor Hisoboti (AI Notebook Manager)
+ * Daftar/jadval rasmini yuklash, AI OCR tahlil, avtomatik kirim-sotuv-qoldiq hisobi,
+ * qo'lda tekshirish/tasdiqlash, ombor qoldig'ini yangilash, kunlik Word/PDF hisobot va tarix.
+ */
+
+class AiReportManager {
+  constructor() {
+    this.reports = [];
+    this.draftItems = [];
+    this.editingReportId = null;
+    this.currentImageFull = '';      // AI ga yuboriladigan tiniq rasm
+    this.currentImageThumb = '';     // Tarixda saqlanadigan ixcham rasm
+    this.currentImageMime = 'image/jpeg';
+    this.currentImageHash = '';
+    this.activeReportForView = null;
+    this.isAnalyzing = false;
+
+    // Tarix filtrlari
+    this.historyFilterPeriod = 'all';
+    this.historySearch = '';
+    this.historyStart = '';
+    this.historyEnd = '';
+  }
+
+  async init() {
+    await this.loadData();
+    this.setDefaultMetaInputs();
+    this.bindEvents();
+    this.renderDraftTable();
+    this.renderHistoryList();
+  }
+
+  async loadData() {
+    this.reports = await window.storageService.getAiReports();
+  }
+
+  setDefaultMetaInputs() {
+    const dateInp = document.getElementById('aiReportDateInput');
+    const sellerInp = document.getElementById('aiSellerNameInput');
+    if (dateInp && !dateInp.value) {
+      dateInp.value = this.getLocalDateStr(new Date());
+    }
+    if (sellerInp && !sellerInp.value) {
+      sellerInp.value = document.getElementById('headerCashierName')?.textContent?.trim() || 'Asilbek';
+    }
+  }
+
+  getLocalDateStr(d) {
+    const dt = d instanceof Date ? d : new Date(d);
+    const y = dt.getFullYear();
+    const m = String(dt.getMonth() + 1).padStart(2, '0');
+    const day = String(dt.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  }
+
+  bindEvents() {
+    const dropZone = document.getElementById('aiDropZone');
+    const fileInput = document.getElementById('aiImageFileInput');
+    const cameraInput = document.getElementById('aiCameraFileInput');
+    const pickBtn = document.getElementById('aiPickFileBtn');
+    const camBtn = document.getElementById('aiCameraBtn');
+    const clearImgBtn = document.getElementById('aiClearImageBtn');
+
+    if (pickBtn && fileInput) {
+      pickBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        fileInput.click();
+      });
+    }
+    if (camBtn && cameraInput) {
+      camBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        cameraInput.click();
+      });
+    }
+    if (dropZone && fileInput) {
+      dropZone.addEventListener('click', (e) => {
+        if (!e.target.closest('button') && !this.currentImageFull) {
+          fileInput.click();
+        }
+      });
+      dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('drag-over');
+      });
+      dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('drag-over');
+      });
+      dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('drag-over');
+        const file = e.dataTransfer?.files?.[0];
+        if (file) this.handleImageSelected(file);
+      });
+    }
+
+    [fileInput, cameraInput].forEach(inp => {
+      if (inp) {
+        inp.addEventListener('change', (e) => {
+          const file = e.target.files?.[0];
+          if (file) this.handleImageSelected(file);
+          e.target.value = '';
+        });
+      }
+    });
+
+    if (clearImgBtn) {
+      clearImgBtn.addEventListener('click', () => this.clearUploadedImage());
+    }
+
+    document.getElementById('aiAnalyzeBtn')?.addEventListener('click', () => this.analyzeCurrentImage());
+    document.getElementById('aiReanalyzeBtn')?.addEventListener('click', () => this.analyzeCurrentImage());
+    document.getElementById('aiAddRowBtn')?.addEventListener('click', () => this.addEmptyRow());
+    document.getElementById('aiCancelBtn')?.addEventListener('click', () => this.cancelDraft());
+    document.getElementById('aiConfirmSaveBtn')?.addEventListener('click', () => this.confirmAndSaveReport());
+    document.getElementById('aiManualTextBtn')?.addEventListener('click', () => this.openManualTextParserModal());
+    document.getElementById('aiParseTextApplyBtn')?.addEventListener('click', () => this.applyManualTextImport());
+    document.getElementById('closeAiTextModalBtn')?.addEventListener('click', () => {
+      document.getElementById('aiManualTextModal')?.classList.remove('active');
+    });
+    document.getElementById('cancelAiTextModalBtn')?.addEventListener('click', () => {
+      document.getElementById('aiManualTextModal')?.classList.remove('active');
+    });
+
+    // Kunlik hisobot (Word, PDF, Chop etish) tugmalari
+    document.getElementById('aiExportWordBtn')?.addEventListener('click', () => this.exportDailyWord());
+    document.getElementById('aiExportPdfBtn')?.addEventListener('click', () => this.exportDailyPdf());
+    document.getElementById('aiPrintReportBtn')?.addEventListener('click', () => this.printDailyReport());
+    document.getElementById('closeAiPreviewSectionBtn')?.addEventListener('click', () => {
+      const sec = document.getElementById('aiGeneratedReportCard');
+      if (sec) sec.style.display = 'none';
+    });
+
+    // Tarix filtrlari
+    const histBtns = document.querySelectorAll('.ai-hist-period-btn');
+    histBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        histBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        this.historyFilterPeriod = btn.getAttribute('data-period');
+        const customBox = document.getElementById('aiHistCustomRange');
+        if (customBox) {
+          customBox.style.display = this.historyFilterPeriod === 'custom' ? 'flex' : 'none';
+        }
+        this.renderHistoryList();
+      });
+    });
+
+    document.getElementById('aiHistSearchInput')?.addEventListener('input', (e) => {
+      this.historySearch = e.target.value.trim().toLowerCase();
+      this.renderHistoryList();
+    });
+    document.getElementById('aiHistStartDate')?.addEventListener('change', (e) => {
+      this.historyStart = e.target.value;
+      this.renderHistoryList();
+    });
+    document.getElementById('aiHistEndDate')?.addEventListener('change', (e) => {
+      this.historyEnd = e.target.value;
+      this.renderHistoryList();
+    });
+  }
+
+  // ================= 1. RASMNI YUKLASH VA SIQISH =================
+  async handleImageSelected(file) {
+    if (!file.type.startsWith('image/')) {
+      window.app.showToast('Iltimos, faqat rasm faylini tanlang (JPG, PNG, WEBP)!', 'warning');
+      return;
+    }
+
+    try {
+      const full = await this.resizeImage(file, 1600, 1600, 0.86);
+      const thumb = await this.resizeImage(file, 720, 720, 0.78);
+      const hash = this.computeFastHash(thumb);
+
+      // Takroriy rasm tekshiruvi
+      const duplicate = await window.storageService.findDuplicateAiReport(hash, null, this.editingReportId);
+      if (duplicate) {
+        window.app.showToast(`Ogohlantirish: Bu rasm ${duplicate.reportDate} sanasida allaqachon tizimga kiritilgan!`, 'warning');
+      }
+
+      this.currentImageFull = full;
+      this.currentImageThumb = thumb;
+      this.currentImageMime = 'image/jpeg';
+      this.currentImageHash = hash;
+
+      this.updateImagePreviewUI();
+      window.app.showToast('Rasm yuklandi! Endi «AI bilan tahlil qilish» tugmasini bosing.', 'success');
+    } catch (err) {
+      console.error('Rasm yuklashda xato:', err);
+      window.app.showToast('Rasmni o‘qishda xatolik yuz berdi.', 'error');
+    }
+  }
+
+  resizeImage(file, maxW, maxH, quality) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('Faylni o‘qib bo‘lmadi'));
+      reader.onload = (ev) => {
+        const img = new Image();
+        img.onerror = () => reject(new Error('Rasm formati yaroqsiz'));
+        img.onload = () => {
+          let w = img.width;
+          let h = img.height;
+          if (w > maxW || h > maxH) {
+            const ratio = Math.min(maxW / w, maxH / h);
+            w = Math.round(w * ratio);
+            h = Math.round(h * ratio);
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, w, h);
+          ctx.drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  computeFastHash(str) {
+    let h = 2166136261;
+    const step = Math.max(1, Math.floor(str.length / 4000));
+    for (let i = 0; i < str.length; i += step) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return `${(h >>> 0).toString(16)}_${str.length}`;
+  }
+
+  updateImagePreviewUI() {
+    const emptyBox = document.getElementById('aiDropEmptyState');
+    const previewBox = document.getElementById('aiDropPreviewState');
+    const previewImg = document.getElementById('aiNotebookPreviewImg');
+    const analyzeBtn = document.getElementById('aiAnalyzeBtn');
+
+    if (this.currentImageFull || this.currentImageThumb) {
+      if (emptyBox) emptyBox.style.display = 'none';
+      if (previewBox) previewBox.style.display = 'flex';
+      if (previewImg) previewImg.src = this.currentImageFull || this.currentImageThumb;
+      if (analyzeBtn) analyzeBtn.disabled = false;
+    } else {
+      if (emptyBox) emptyBox.style.display = 'flex';
+      if (previewBox) previewBox.style.display = 'none';
+      if (previewImg) previewImg.src = '';
+      if (analyzeBtn) analyzeBtn.disabled = true;
+    }
+  }
+
+  clearUploadedImage() {
+    this.currentImageFull = '';
+    this.currentImageThumb = '';
+    this.currentImageHash = '';
+    this.updateImagePreviewUI();
+  }
+
+  // ================= 2. AI TAHLIL QILISH (SERVERLESS API) =================
+  async analyzeCurrentImage() {
+    if (!this.currentImageFull) {
+      window.app.showToast('Avval daftar yoki jadval rasmini yuklang!', 'warning');
+      return;
+    }
+    if (this.isAnalyzing) return;
+
+    this.setAnalyzingState(true, 'AI rasmdagi qo‘lyozma va jadvalni o‘qimoqda...');
+    this.showAiNotice('', '');
+
+    try {
+      const catalogProducts = await window.storageService.getProducts();
+      const catalogHints = catalogProducts.map(p => `${p.name} (${p.price} so‘m)`);
+
+      const response = await fetch('/api/analyze-notebook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          imageBase64: this.currentImageFull,
+          mimeType: this.currentImageMime,
+          catalogHints
+        })
+      });
+
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        throw new Error('SERVER_UNAVAILABLE');
+      }
+
+      const payload = await response.json();
+      if (!response.ok || !payload.ok) {
+        const err = new Error(payload.error || 'AI tahlilida xatolik yuz berdi.');
+        err.code = payload.code;
+        throw err;
+      }
+
+      const aiData = payload.data || {};
+      if (aiData.seller) {
+        const sellerInp = document.getElementById('aiSellerNameInput');
+        if (sellerInp && !sellerInp.value.trim()) sellerInp.value = aiData.seller;
+      }
+      if (aiData.reportDate && /^\d{4}-\d{2}-\d{2}$/.test(aiData.reportDate)) {
+        const dateInp = document.getElementById('aiReportDateInput');
+        if (dateInp) dateInp.value = aiData.reportDate;
+      }
+
+      const rawItems = Array.isArray(aiData.items) ? aiData.items : [];
+      if (rawItems.length === 0) {
+        this.showAiNotice('warning', 'AI rasmdan mahsulot qatorlarini ajrata olmadi. Rasm sifatini tekshiring yoki «Matndan / Qo‘lda kiritish» orqali kiriting.');
+        window.app.showToast('Rasmda mahsulot jadvali topilmadi.', 'warning');
+      } else {
+        this.draftItems = rawItems.map(it => this.normalizeAndCalculateRow(it, catalogProducts));
+        this.renderDraftTable();
+
+        const uncertainCount = this.draftItems.filter(r => r.statusType !== 'ok' && r.statusType !== 'calc').length;
+        if (uncertainCount > 0) {
+          this.showAiNotice('warning', `AI ${this.draftItems.length} ta qatorni o‘qidi. ${uncertainCount} ta qatorda yetishmayotgan yoki noaniq raqam bor — iltimos, sariq/qizil kataklarni tekshirib aniqlashtiring.`);
+        } else {
+          this.showAiNotice('success', `AI ${this.draftItems.length} ta mahsulotni muvaffaqiyatli o‘qidi va hisob-kitob qildi. Tekshirib «Tasdiqlash va saqlash» tugmasini bosing.`);
+        }
+        if (window.soundService) window.soundService.playSuccess();
+      }
+    } catch (err) {
+      console.error('AI analysis error:', err);
+      if (err.message === 'SERVER_UNAVAILABLE' || window.location.protocol === 'file:') {
+        this.showAiNotice('warning', 'AI server API (/api/analyze-notebook) faqat Vercel saytida ishlaydi. Mahalliy kompyuterda sinash uchun «Matndan / Qo‘lda kiritish» tugmasidan foydalanishingiz mumkin.');
+      } else if (err.code === 'MISSING_API_KEY') {
+        this.showAiNotice('error', 'Serverda AI API kaliti (GEMINI_API_KEY yoki OPENAI_API_KEY) ulanmagan. Vercel -> Settings -> Environment Variables bo‘limiga kalitni qo‘shing yoki hozircha «Matndan / Qo‘lda kiritish» dan foydalaning.');
+      } else {
+        this.showAiNotice('error', err.message || 'Rasmni tahlil qilishda xatolik yuz berdi.');
+      }
+      if (window.soundService) window.soundService.playError();
+    } finally {
+      this.setAnalyzingState(false);
+    }
+  }
+
+  setAnalyzingState(loading, text = '') {
+    this.isAnalyzing = loading;
+    const overlay = document.getElementById('aiAnalyzingOverlay');
+    const statusTxt = document.getElementById('aiAnalyzingText');
+    const analyzeBtn = document.getElementById('aiAnalyzeBtn');
+    const reanalyzeBtn = document.getElementById('aiReanalyzeBtn');
+
+    if (overlay) overlay.style.display = loading ? 'flex' : 'none';
+    if (statusTxt && text) statusTxt.textContent = text;
+    if (analyzeBtn) analyzeBtn.disabled = loading || !this.currentImageFull;
+    if (reanalyzeBtn) reanalyzeBtn.disabled = loading || !this.currentImageFull;
+  }
+
+  showAiNotice(type, message) {
+    const box = document.getElementById('aiStatusNotice');
+    if (!box) return;
+    if (!message) {
+      box.style.display = 'none';
+      box.innerHTML = '';
+      return;
+    }
+    box.style.display = 'flex';
+    box.className = `ai-status-notice ${type}`;
+    const icon = type === 'success' ? 'fa-circle-check' : (type === 'error' ? 'fa-circle-exclamation' : 'fa-triangle-exclamation');
+    box.innerHTML = `<i class="fa-solid ${icon}"></i><span>${this.escapeHtml(message)}</span>`;
+  }
+
+  // ================= 3. AVTOMATIK HISOB-KITOB VA VALIDATSIYA =================
+  normalizeAndCalculateRow(raw, catalogProducts = []) {
+    const name = String(raw.name || '').trim();
+    const matched = this.findMatchingCatalogProduct(name, catalogProducts);
+
+    let price = this.toNumOrNull(raw.price);
+    let priceSource = 'image';
+    if (price === null && matched) {
+      price = Number(matched.price);
+      priceSource = 'catalog';
+    }
+
+    const row = {
+      rowId: raw.rowId || ('r_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7)),
+      name,
+      matchedProductId: matched ? matched.id : (raw.matchedProductId || null),
+      category: matched ? matched.category : (raw.category || this.guessCategoryByName(name)),
+      unit: raw.unit || (matched ? matched.unit : 'dona') || 'dona',
+      price,
+      priceSource,
+      totalQty: this.toNumOrNull(raw.totalQty),
+      soldQty: this.toNumOrNull(raw.soldQty),
+      remainingQty: this.toNumOrNull(raw.remainingQty),
+      confidence: raw.confidence || 'medium',
+      uncertainFields: Array.isArray(raw.uncertainFields) ? raw.uncertainFields : [],
+      rawLineTotal: this.toNumOrNull(raw.lineTotal)
+    };
+
+    return this.recalculateRow(row);
+  }
+
+  recalculateRow(row) {
+    let { totalQty, soldQty, remainingQty, price } = row;
+    let statusType = 'ok';
+    let statusText = 'Tasdiqlashga tayyor';
+    const missing = [];
+
+    if (!row.name || !row.name.trim()) missing.push('Nomi');
+
+    // Avtomatik kirim / sotuv / qoldiq hisobi
+    if (totalQty !== null && remainingQty !== null && soldQty === null) {
+      if (remainingQty > totalQty) {
+        statusType = 'error';
+        statusText = 'Xato: Qoldiq jami miqdordan katta!';
+      } else {
+        soldQty = totalQty - remainingQty;
+        statusType = 'calc';
+        statusText = 'Hisoblandi (Jami − Qoldiq)';
+      }
+    } else if (totalQty !== null && soldQty !== null && remainingQty === null) {
+      if (soldQty > totalQty) {
+        statusType = 'error';
+        statusText = 'Xato: Sotildi jami miqdordan katta!';
+      } else {
+        remainingQty = totalQty - soldQty;
+        statusType = 'calc';
+        statusText = 'Hisoblandi (Jami − Sotildi)';
+      }
+    } else if (soldQty !== null && remainingQty !== null && totalQty === null) {
+      totalQty = soldQty + remainingQty;
+      statusType = 'calc';
+      statusText = 'Hisoblandi (Sotildi + Qoldiq)';
+    } else if (totalQty !== null && soldQty !== null && remainingQty !== null) {
+      if (Math.abs((soldQty + remainingQty) - totalQty) > 0.001) {
+        statusType = 'error';
+        statusText = 'Mos emas: Sotildi + Qoldiq ≠ Jami';
+      } else {
+        statusType = 'ok';
+        statusText = 'Aniq';
+      }
+    } else {
+      if (totalQty === null) missing.push('Jami');
+      if (soldQty === null) missing.push('Sotildi');
+      if (remainingQty === null) missing.push('Qoldiq');
+      statusType = 'warn';
+      statusText = `Aniqlashtirish kerak (${missing.join(', ')})`;
+    }
+
+    if (price === null) {
+      if (statusType !== 'error') {
+        statusType = 'warn';
+        statusText = 'Narx kiritilmagan — kiriting';
+      }
+    } else if (row.priceSource === 'catalog' && statusType === 'ok') {
+      statusText = 'Aniq (Narx katalogdan)';
+    }
+
+    if (row.confidence === 'low' && statusType === 'ok') {
+      statusType = 'warn';
+      statusText = 'Noaniq yozuv — tekshiring';
+    }
+
+    const lineTotal = (price !== null && soldQty !== null) ? Math.round(price * soldQty) : 0;
+
+    return {
+      ...row,
+      totalQty,
+      soldQty,
+      remainingQty,
+      lineTotal,
+      statusType,
+      statusText
+    };
+  }
+
+  toNumOrNull(val) {
+    if (val === null || val === undefined || val === '') return null;
+    const n = Number(val);
+    return Number.isFinite(n) && n >= 0 ? n : null;
+  }
+
+  findMatchingCatalogProduct(name, catalogProducts) {
+    const clean = String(name || '').trim().toLowerCase();
+    if (!clean) return null;
+    return catalogProducts.find(p => p.name.trim().toLowerCase() === clean) ||
+      catalogProducts.find(p => {
+        const pn = p.name.trim().toLowerCase();
+        return pn.includes(clean) || clean.includes(pn);
+      }) || null;
+  }
+
+  guessCategoryByName(name) {
+    const s = String(name || '').toLowerCase();
+    if (s.includes('somsa')) return 'somsa';
+    if (['suv', 'cola', 'fanta', 'sprite', 'sharbat', 'ichimlik', 'chortoq', 'pepsi'].some(k => s.includes(k))) return 'ichimliklar';
+    if (['shokolad', 'vafli', 'pechen', 'snickers', 'twix', 'kitkat', 'alpen', 'baton'].some(k => s.includes(k))) return 'shokolad_vaflilar';
+    return 'shirinliklar';
+  }
+
+  // ================= 4. TEKSHIRISH VA QO'LDA TAHRIRLASH JADVALI =================
+  renderDraftTable() {
+    const tbody = document.getElementById('aiVerifyTableBody');
+    const summaryBar = document.getElementById('aiDraftSummaryStrip');
+    const confirmBtn = document.getElementById('aiConfirmSaveBtn');
+    const reviewSection = document.getElementById('aiReviewSection');
+
+    if (!tbody) return;
+
+    if (reviewSection) {
+      reviewSection.style.display = 'block';
+    }
+
+    if (this.draftItems.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" class="text-center py-6 text-muted">
+            <i class="fa-solid fa-table-list fa-2x mb-2 d-block"></i>
+            Hozircha qatorlar yo‘q. Rasm yuklab AI tahlil qiling yoki «+ Qator qo‘shish» tugmasini bosing.
+          </td>
+        </tr>
+      `;
+      if (summaryBar) summaryBar.innerHTML = '';
+      if (confirmBtn) confirmBtn.disabled = true;
+      return;
+    }
+
+    tbody.innerHTML = this.draftItems.map((row, idx) => {
+      const badgeClass = row.statusType === 'error'
+        ? 'ai-badge-err'
+        : (row.statusType === 'warn' ? 'ai-badge-warn' : (row.statusType === 'calc' ? 'ai-badge-calc' : 'ai-badge-ok'));
+
+      return `
+        <tr class="ai-row-${row.statusType}" data-rowid="${row.rowId}">
+          <td class="text-center text-muted" data-label="№">${idx + 1}</td>
+          <td data-label="Mahsulot">
+            <input type="text" class="ai-cell-input ai-cell-name"
+                   value="${this.escapeHtml(row.name)}"
+                   placeholder="Mahsulot nomi..."
+                   onchange="window.aiReportManager.updateRowField('${row.rowId}', 'name', this.value)">
+            ${row.matchedProductId ? '<small class="ai-cat-match"><i class="fa-solid fa-link"></i> Katalog bilan bog‘langan</small>' : ''}
+          </td>
+          <td data-label="Narxi">
+            <input type="number" class="ai-cell-input ai-cell-num ${row.price === null ? 'cell-missing' : ''}"
+                   value="${row.price !== null ? row.price : ''}" min="0" step="100" placeholder="Narx"
+                   onchange="window.aiReportManager.updateRowField('${row.rowId}', 'price', this.value)">
+          </td>
+          <td data-label="Jami kirim">
+            <input type="number" class="ai-cell-input ai-cell-num ${row.totalQty === null ? 'cell-missing' : ''}"
+                   value="${row.totalQty !== null ? row.totalQty : ''}" min="0" step="1" placeholder="Jami"
+                   onchange="window.aiReportManager.updateRowField('${row.rowId}', 'totalQty', this.value)">
+          </td>
+          <td data-label="Sotildi">
+            <input type="number" class="ai-cell-input ai-cell-num ${row.soldQty === null ? 'cell-missing' : ''}"
+                   value="${row.soldQty !== null ? row.soldQty : ''}" min="0" step="1" placeholder="Sotildi"
+                   onchange="window.aiReportManager.updateRowField('${row.rowId}', 'soldQty', this.value)">
+          </td>
+          <td data-label="Qoldiq">
+            <input type="number" class="ai-cell-input ai-cell-num ${row.remainingQty === null ? 'cell-missing' : ''}"
+                   value="${row.remainingQty !== null ? row.remainingQty : ''}" min="0" step="1" placeholder="Qoldi"
+                   onchange="window.aiReportManager.updateRowField('${row.rowId}', 'remainingQty', this.value)">
+          </td>
+          <td class="font-bold text-primary text-right" data-label="Jami summa">
+            ${window.app.formatMoney(row.lineTotal)}
+          </td>
+          <td data-label="Holat">
+            <div class="ai-row-status-wrap">
+              <span class="ai-status-pill ${badgeClass}">${this.escapeHtml(row.statusText)}</span>
+              <button type="button" class="btn-action delete" title="Qatorni o‘chirish"
+                      onclick="window.aiReportManager.removeRow('${row.rowId}')">
+                <i class="fa-solid fa-trash-can"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    const totals = this.calculateSummaryTotals(this.draftItems);
+    if (summaryBar) {
+      summaryBar.innerHTML = `
+        <div class="ai-sum-chip"><span>Mahsulot turlari:</span> <strong>${totals.typesCount} tur</strong></div>
+        <div class="ai-sum-chip"><span>Jami kirim:</span> <strong>${totals.totalIncoming} dona</strong></div>
+        <div class="ai-sum-chip sold"><span>Jami sotildi:</span> <strong>${totals.totalSold} dona</strong></div>
+        <div class="ai-sum-chip rem"><span>Jami qoldiq:</span> <strong>${totals.totalRemaining} dona</strong></div>
+        <div class="ai-sum-chip total"><span>Umumiy savdo:</span> <strong>${window.app.formatMoney(totals.totalAmount)}</strong></div>
+      `;
+    }
+
+    const hasBlockingIssues = this.draftItems.some(r => r.statusType === 'error' || r.statusType === 'warn');
+    if (confirmBtn) {
+      confirmBtn.disabled = this.draftItems.length === 0 || hasBlockingIssues;
+      confirmBtn.title = hasBlockingIssues ? 'Avval barcha noaniq yoki xato kataklarni to‘g‘rilang' : 'Hisobotni tasdiqlash va saqlash';
+    }
+  }
+
+  async updateRowField(rowId, field, rawValue) {
+    const idx = this.draftItems.findIndex(r => r.rowId === rowId);
+    if (idx === -1) return;
+
+    const row = { ...this.draftItems[idx] };
+    row.confidence = 'high';
+
+    if (field === 'name') {
+      row.name = String(rawValue || '').trim();
+      const catalog = await window.storageService.getProducts();
+      const matched = this.findMatchingCatalogProduct(row.name, catalog);
+      row.matchedProductId = matched ? matched.id : null;
+      row.category = matched ? matched.category : this.guessCategoryByName(row.name);
+      if (row.price === null && matched) {
+        row.price = Number(matched.price);
+        row.priceSource = 'catalog';
+      }
+    } else {
+      const val = this.toNumOrNull(rawValue);
+      row[field] = val;
+
+      if (field === 'price') {
+        row.priceSource = 'manual';
+      } else if (field === 'totalQty' && val !== null) {
+        if (row.remainingQty !== null) row.soldQty = val - row.remainingQty;
+        else if (row.soldQty !== null) row.remainingQty = val - row.soldQty;
+      } else if (field === 'remainingQty' && val !== null) {
+        if (row.totalQty !== null) row.soldQty = row.totalQty - val;
+        else if (row.soldQty !== null) row.totalQty = row.soldQty + val;
+      } else if (field === 'soldQty' && val !== null) {
+        if (row.totalQty !== null) row.remainingQty = row.totalQty - val;
+        else if (row.remainingQty !== null) row.totalQty = val + row.remainingQty;
+      }
+    }
+
+    this.draftItems[idx] = this.recalculateRow(row);
+    this.renderDraftTable();
+  }
+
+  addEmptyRow() {
+    this.draftItems.push(this.recalculateRow({
+      rowId: 'r_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+      name: '',
+      price: null,
+      totalQty: null,
+      soldQty: null,
+      remainingQty: null,
+      unit: 'dona',
+      confidence: 'high',
+      priceSource: 'manual'
+    }));
+    this.renderDraftTable();
+  }
+
+  removeRow(rowId) {
+    this.draftItems = this.draftItems.filter(r => r.rowId !== rowId);
+    this.renderDraftTable();
+  }
+
+  async cancelDraft() {
+    if (this.draftItems.length > 0 || this.currentImageFull) {
+      const ok = await window.app.showConfirm({
+        title: 'Bekor qilish',
+        message: 'Kiritilgan yoki tahlil qilingan qoralama tozalanadi. Davom etilsinmi?',
+        confirmText: 'Ha, tozalash',
+        cancelText: 'Qolish',
+        type: 'warning'
+      });
+      if (!ok) return;
+    }
+
+    this.draftItems = [];
+    this.editingReportId = null;
+    this.clearUploadedImage();
+    this.showAiNotice('', '');
+    this.renderDraftTable();
+  }
+
+  // Qo'lda / Matndan tezkor kiritish (offline yoki zaxira usul)
+  openManualTextParserModal() {
+    const modal = document.getElementById('aiManualTextModal');
+    if (modal) modal.classList.add('active');
+    setTimeout(() => document.getElementById('aiManualTextArea')?.focus(), 80);
+  }
+
+  async applyManualTextImport() {
+    const txt = document.getElementById('aiManualTextArea')?.value || '';
+    const lines = txt.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    if (lines.length === 0) {
+      window.app.showToast('Matn kiriting!', 'warning');
+      return;
+    }
+
+    const catalog = await window.storageService.getProducts();
+    const parsed = lines.map(line => {
+      // Masalan: "Kartoshkali somsa | 6000 | 30 | 5" yoki "Kartoshkali somsa 6 000 30 5"
+      const nums = [];
+      let cleanedName = line;
+
+      if (line.includes('|') || line.includes('\t') || line.includes(';')) {
+        const parts = line.split(/[|\t;]+/).map(s => s.trim()).filter(Boolean);
+        cleanedName = parts[0] || line;
+        parts.slice(1).forEach(part => {
+          const val = Number(part.replace(/[^\d.,]/g, '').replace(/\s+/g, ''));
+          if (Number.isFinite(val) && part.replace(/[^\d]/g, '').length > 0) {
+            nums.push(val);
+          }
+        });
+      } else {
+        cleanedName = line
+          .replace(/(?:(?<!\d)\d{1,3}(?: [1-9]00| 000)(?: 000)*(?!\d)|\d+)/g, (m) => {
+            const val = Number(m.replace(/\s+/g, ''));
+            if (Number.isFinite(val)) nums.push(val);
+            return ' ';
+          })
+          .replace(/[-–—,:;]+/g, ' ')
+          .replace(/\b(so'm|so‘m|sum|dona|ta|kg|litr|jami|qoldi|qoldiq|sotildi)\b/gi, '')
+          .replace(/\s+/g, ' ')
+          .trim();
+      }
+
+      let price = null, totalQty = null, soldQty = null, remainingQty = null;
+      if (nums.length === 2) {
+        // Masalan: Jami 30, Qoldi 5
+        [totalQty, remainingQty] = nums;
+      } else if (nums.length === 3) {
+        if (nums[0] >= 500) {
+          // Narx, Jami, Qoldiq
+          [price, totalQty, remainingQty] = nums;
+        } else {
+          // Jami, Sotildi, Qoldiq
+          [totalQty, soldQty, remainingQty] = nums;
+        }
+      } else if (nums.length >= 4) {
+        [price, totalQty, soldQty, remainingQty] = nums;
+      }
+
+      return this.normalizeAndCalculateRow({
+        name: cleanedName || line,
+        price,
+        totalQty,
+        soldQty,
+        remainingQty,
+        confidence: 'high'
+      }, catalog);
+    });
+
+    this.draftItems = parsed;
+    this.renderDraftTable();
+    document.getElementById('aiManualTextModal')?.classList.remove('active');
+    window.app.showToast(`${parsed.length} ta qator jadvalga joylandi!`, 'success');
+  }
+
+  // ================= 5. TASDIQLASH, OMBORNI YANGILASH VA SAQLASH =================
+  calculateSummaryTotals(items) {
+    return (items || []).reduce((acc, it) => {
+      acc.typesCount += 1;
+      acc.totalIncoming += Number(it.totalQty || 0);
+      acc.totalSold += Number(it.soldQty || 0);
+      acc.totalRemaining += Number(it.remainingQty || 0);
+      acc.totalAmount += Number(it.lineTotal || 0);
+      return acc;
+    }, { typesCount: 0, totalIncoming: 0, totalSold: 0, totalRemaining: 0, totalAmount: 0 });
+  }
+
+  buildContentSignature(reportDate, items) {
+    const sorted = [...items]
+      .map(i => `${i.name.toLowerCase()}:${i.price}:${i.totalQty}:${i.soldQty}:${i.remainingQty}`)
+      .sort()
+      .join('|');
+    return `${reportDate}__${sorted}`;
+  }
+
+  async confirmAndSaveReport() {
+    if (this.draftItems.length === 0) {
+      window.app.showToast('Saqlash uchun kamida bitta mahsulot bo‘lishi kerak!', 'warning');
+      return;
+    }
+
+    const invalid = this.draftItems.filter(r => r.statusType === 'error' || r.statusType === 'warn');
+    if (invalid.length > 0) {
+      window.app.showToast('Iltimos, avval barcha noaniq yoki xato qatorlarni to‘g‘rilang!', 'warning');
+      return;
+    }
+
+    const reportDate = document.getElementById('aiReportDateInput')?.value || this.getLocalDateStr(new Date());
+    const seller = document.getElementById('aiSellerNameInput')?.value?.trim() || 'Sotuvchi';
+    const applyStock = document.getElementById('aiUpdateStockCheckbox')?.checked ?? true;
+    const contentSignature = this.buildContentSignature(reportDate, this.draftItems);
+
+    // Takroriy hisobotni oldini olish
+    const duplicate = await window.storageService.findDuplicateAiReport(
+      this.currentImageHash,
+      contentSignature,
+      this.editingReportId
+    );
+
+    if (duplicate) {
+      const proceedAnyway = await window.app.showConfirm({
+        title: 'Takroriy hisobot aniqlandi!',
+        message: `Bu rasm yoki bir xil tarkibdagi hisobot (${duplicate.reportDate}, ${duplicate.seller}) avval saqlangan. Takroriy hisoblanmasligi uchun bekor qilish tavsiya etiladi. Baribir saqlaysizmi?`,
+        confirmText: 'Ha, baribir saqlash',
+        cancelText: 'Bekor qilish',
+        type: 'danger'
+      });
+      if (!proceedAnyway) return;
+    }
+
+    const totals = this.calculateSummaryTotals(this.draftItems);
+    const cleanItems = this.draftItems.map(r => ({
+      name: r.name,
+      matchedProductId: r.matchedProductId || null,
+      category: r.category || this.guessCategoryByName(r.name),
+      unit: r.unit || 'dona',
+      price: Number(r.price || 0),
+      totalQty: Number(r.totalQty || 0),
+      soldQty: Number(r.soldQty || 0),
+      remainingQty: Number(r.remainingQty || 0),
+      lineTotal: Number(r.lineTotal || 0)
+    }));
+
+    const reportObj = {
+      id: this.editingReportId || ('airep_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6)),
+      reportDate,
+      seller,
+      createdAt: new Date().toISOString(),
+      imageHash: this.currentImageHash || '',
+      contentSignature,
+      imageDataUrl: this.currentImageThumb || '',
+      items: cleanItems,
+      totals,
+      appliedToStock: applyStock
+    };
+
+    try {
+      // Ombordagi mahsulot qoldiqlarini yangilash
+      if (applyStock) {
+        await this.syncReportToProductsInventory(cleanItems);
+      }
+
+      if (this.editingReportId) {
+        await window.storageService.updateAiReport(reportObj);
+        window.app.showToast('Hisobot muvaffaqiyatli yangilandi!', 'success');
+      } else {
+        await window.storageService.addAiReport(reportObj);
+        window.app.showToast('Hisobot tasdiqlandi va ombor qoldig‘i bilan saqlandi!', 'success');
+      }
+
+      if (window.soundService) window.soundService.playSuccess();
+
+      this.activeReportForView = { ...reportObj, resolvedImage: this.currentImageThumb };
+      this.draftItems = [];
+      this.editingReportId = null;
+      this.clearUploadedImage();
+      this.showAiNotice('', '');
+      this.renderDraftTable();
+
+      await this.loadData();
+      this.renderHistoryList();
+      this.renderDailyReportPreview(this.activeReportForView);
+
+      if (window.productsManager) await window.productsManager.refreshAll();
+    } catch (err) {
+      console.error('Hisobotni saqlashda xato:', err);
+      window.app.showToast('Hisobotni saqlashda xatolik yuz berdi!', 'error');
+    }
+  }
+
+  async syncReportToProductsInventory(items) {
+    const products = await window.storageService.getProducts();
+
+    for (const item of items) {
+      let existing = products.find(p =>
+        (item.matchedProductId && p.id === item.matchedProductId) ||
+        p.name.trim().toLowerCase() === item.name.trim().toLowerCase()
+      );
+
+      if (existing) {
+        existing.stockQty = Number(item.remainingQty || 0);
+        if (!existing.price && item.price > 0) existing.price = item.price;
+        existing.updatedAt = new Date().toISOString();
+      } else {
+        const catId = item.category || this.guessCategoryByName(item.name);
+        const newProd = {
+          id: 'p_' + Date.now() + '_' + Math.floor(Math.random() * 10000),
+          name: item.name,
+          price: Number(item.price || 0),
+          category: catId,
+          unit: item.unit || 'dona',
+          stockQty: Number(item.remainingQty || 0),
+          image: window.storageService.getCategoryDefaultImage(catId),
+          description: 'AI hisoboti orqali qo‘shilgan mahsulot',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
+        products.unshift(newProd);
+      }
+    }
+
+    await window.storageService.persistProductsList(products);
+  }
+
+  // ================= 6. PROFESSIONAL KUNLIK HISOBOT (PREVYUW, WORD, PDF, PRINT) =================
+  renderDailyReportPreview(report) {
+    if (!report) return;
+    this.activeReportForView = report;
+
+    const card = document.getElementById('aiGeneratedReportCard');
+    const container = document.getElementById('aiDailyReportPreviewArea');
+    if (!card || !container) return;
+
+    const settings = window.app?.settings || {};
+    const shopName = settings.shopName || 'DO‘KON POS';
+    const totals = report.totals || this.calculateSummaryTotals(report.items);
+
+    container.innerHTML = `
+      <div class="word-sheet compact-sheet" id="printableAiReportArea">
+        <div class="word-header-block compact">
+          <div class="word-header-top">
+            <div>
+              <div class="word-shop-title">${this.escapeHtml(shopName)}</div>
+              <div class="word-doc-title" style="font-size: 16px;">DO‘KON KUNLIK SAVDO HISOBOTI</div>
+            </div>
+            <div class="word-doc-right">
+              <div class="word-date-badge"><i class="fa-regular fa-calendar"></i> Sana: <strong>${this.escapeHtml(report.reportDate)}</strong></div>
+              <div class="word-shop-meta" style="margin-top: 4px;">Mas’ul sotuvchi: <strong>${this.escapeHtml(report.seller || '—')}</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="word-table-scroll">
+          <table class="word-table compact">
+            <thead>
+              <tr>
+                <th style="width: 34px; text-align: center;">№</th>
+                <th style="text-align: left;">Mahsulot</th>
+                <th style="width: 96px; text-align: right;">Narxi</th>
+                <th style="width: 72px; text-align: right;">Jami</th>
+                <th style="width: 76px; text-align: right;">Sotildi</th>
+                <th style="width: 76px; text-align: right;">Qoldiq</th>
+                <th style="width: 118px; text-align: right;">Jami summa</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${report.items.map((it, idx) => `
+                <tr>
+                  <td style="text-align: center;">${idx + 1}</td>
+                  <td style="text-align: left; font-weight: 700;">${this.escapeHtml(it.name)}</td>
+                  <td style="text-align: right;">${window.app.formatMoney(it.price)}</td>
+                  <td style="text-align: right;">${it.totalQty}</td>
+                  <td style="text-align: right; color: #166534; font-weight: 700;">${it.soldQty}</td>
+                  <td style="text-align: right; color: #1e40af; font-weight: 700;">${it.remainingQty}</td>
+                  <td style="text-align: right; font-weight: 800;">${window.app.formatMoney(it.lineTotal)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+            <tfoot>
+              <tr class="word-tfoot-row">
+                <td colspan="3" style="text-align: right; font-weight: 800;">JAMI (${totals.typesCount} tur):</td>
+                <td style="text-align: right; font-weight: 800;">${totals.totalIncoming}</td>
+                <td style="text-align: right; font-weight: 800; color: #166534;">${totals.totalSold}</td>
+                <td style="text-align: right; font-weight: 800; color: #1e40af;">${totals.totalRemaining}</td>
+                <td style="text-align: right; font-weight: 900; color: #0f172a;">${window.app.formatMoney(totals.totalAmount)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="ai-report-bottom-summary">
+          <div><span>Jami mahsulot turlari:</span> <strong>${totals.typesCount} ta</strong></div>
+          <div><span>Jami kirim:</span> <strong>${totals.totalIncoming} dona</strong></div>
+          <div><span>Jami sotilgan mahsulot:</span> <strong>${totals.totalSold} dona</strong></div>
+          <div><span>Jami qolgan mahsulot:</span> <strong>${totals.totalRemaining} dona</strong></div>
+          <div class="sum-highlight"><span>Umumiy savdo summasi:</span> <strong>${window.app.formatMoney(totals.totalAmount)}</strong></div>
+        </div>
+
+        ${report.resolvedImage ? `
+          <details class="ai-attached-photo-box">
+            <summary><i class="fa-solid fa-image"></i> Yuklangan asl daftar rasmini ko‘rish</summary>
+            <img src="${report.resolvedImage}" alt="Daftar rasmi" class="ai-attached-photo-img" />
+          </details>
+        ` : ''}
+      </div>
+    `;
+
+    card.style.display = 'block';
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  exportDailyWord(report = this.activeReportForView) {
+    if (!report) {
+      window.app.showToast('Avval hisobotni tanlang yoki yarating!', 'warning');
+      return;
+    }
+
+    const settings = window.app?.settings || {};
+    const shopName = settings.shopName || 'DO‘KON POS';
+    const totals = report.totals || this.calculateSummaryTotals(report.items);
+
+    const rowsHtml = report.items.map((it, idx) => `
+      <tr>
+        <td style="text-align:center;">${idx + 1}</td>
+        <td style="text-align:left; font-weight:bold;">${this.escapeHtml(it.name)}</td>
+        <td style="text-align:right;">${window.app.formatMoney(it.price)}</td>
+        <td style="text-align:right;">${it.totalQty}</td>
+        <td style="text-align:right;">${it.soldQty}</td>
+        <td style="text-align:right;">${it.remainingQty}</td>
+        <td style="text-align:right; font-weight:bold;">${window.app.formatMoney(it.lineTotal)}</td>
+      </tr>
+    `).join('');
+
+    const wordHtml = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <title>DO‘KON KUNLIK SAVDO HISOBOTI - ${this.escapeHtml(report.reportDate)}</title>
+        <style>
+          @page { size: A4 portrait; margin: 10mm 12mm; }
+          body { font-family: 'Calibri', 'Arial', sans-serif; font-size: 9.5pt; color: #0f172a; line-height: 1.25; }
+          .head-tbl { width: 100%; border-collapse: collapse; border-bottom: 1.5pt solid #0f172a; margin-bottom: 8pt; }
+          .head-tbl td { border: none; padding: 0 0 6pt 0; }
+          .shop { font-size: 13pt; font-weight: bold; color: #1e3a8a; }
+          .title { font-size: 12pt; font-weight: bold; color: #0f172a; margin-top: 2pt; }
+          .meta { font-size: 9pt; color: #334155; text-align: right; }
+          .main-tbl { width: 100%; border-collapse: collapse; margin-bottom: 8pt; }
+          .main-tbl th { background-color: #e2e8f0; border: 0.75pt solid #94a3b8; padding: 4.5pt 5pt; font-size: 8.5pt; font-weight: bold; }
+          .main-tbl td { border: 0.5pt solid #cbd5e1; padding: 3.5pt 5pt; font-size: 8.5pt; }
+          .tfoot td { background-color: #f1f5f9; border-top: 1.25pt solid #0f172a; font-weight: bold; padding: 5pt; }
+          .sum-tbl { width: 100%; border-collapse: collapse; margin-top: 6pt; }
+          .sum-tbl td { border: 0.5pt solid #cbd5e1; padding: 4pt 7pt; font-size: 9pt; background-color: #f8fafc; }
+        </style>
+      </head>
+      <body>
+        <table class="head-tbl">
+          <tr>
+            <td style="width: 58%;">
+              <div class="shop">${this.escapeHtml(shopName)}</div>
+              <div class="title">DO‘KON KUNLIK SAVDO HISOBOTI</div>
+            </td>
+            <td class="meta" style="width: 42%;">
+              <div><strong>Sana:</strong> ${this.escapeHtml(report.reportDate)}</div>
+              <div><strong>Mas’ul sotuvchi:</strong> ${this.escapeHtml(report.seller || '—')}</div>
+            </td>
+          </tr>
+        </table>
+
+        <table class="main-tbl">
+          <thead>
+            <tr>
+              <th style="width:26px; text-align:center;">№</th>
+              <th style="text-align:left;">Mahsulot</th>
+              <th style="width:76px; text-align:right;">Narxi</th>
+              <th style="width:52px; text-align:right;">Jami</th>
+              <th style="width:56px; text-align:right;">Sotildi</th>
+              <th style="width:56px; text-align:right;">Qoldiq</th>
+              <th style="width:90px; text-align:right;">Jami summa</th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+          <tfoot>
+            <tr class="tfoot">
+              <td colspan="3" style="text-align:right;">JAMI:</td>
+              <td style="text-align:right;">${totals.totalIncoming}</td>
+              <td style="text-align:right;">${totals.totalSold}</td>
+              <td style="text-align:right;">${totals.totalRemaining}</td>
+              <td style="text-align:right;">${window.app.formatMoney(totals.totalAmount)}</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <table class="sum-tbl">
+          <tr>
+            <td><strong>Jami mahsulot turlari:</strong> ${totals.typesCount} ta</td>
+            <td><strong>Jami kirim:</strong> ${totals.totalIncoming} dona</td>
+            <td><strong>Jami sotilgan:</strong> ${totals.totalSold} dona</td>
+          </tr>
+          <tr>
+            <td><strong>Jami qolgan:</strong> ${totals.totalRemaining} dona</td>
+            <td colspan="2" style="background-color:#eff6ff; color:#1e3a8a;"><strong>Umumiy savdo summasi: ${window.app.formatMoney(totals.totalAmount)}</strong></td>
+          </tr>
+        </table>
+      ${'</body>'}
+      ${'</html>'}
+    `;
+
+    const blob = new Blob(['\ufeff', wordHtml], { type: 'application/msword;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `DOKON_Kunlik_Hisobot_${report.reportDate}.doc`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    window.app.showToast('Kunlik Word hisoboti (.doc) yuklab olindi!', 'success');
+  }
+
+  exportDailyPdf(report = this.activeReportForView) {
+    if (!report) {
+      window.app.showToast('Avval hisobotni tanlang yoki yarating!', 'warning');
+      return;
+    }
+
+    try {
+      const canvases = this.renderDailyReportToCanvases(report);
+      const pdfBytes = window.reportsManager.buildPdfFromCanvasPages(canvases);
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `DOKON_Kunlik_Hisobot_${report.reportDate}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      window.app.showToast('Kunlik PDF hisoboti (.pdf) yuklab olindi!', 'success');
+    } catch (err) {
+      console.error('AI PDF export xatosi:', err);
+      window.app.showToast('PDF yaratishda xatolik yuz berdi!', 'error');
+    }
+  }
+
+  renderDailyReportToCanvases(report = this.activeReportForView) {
+    if (!report) {
+      throw new Error('Hisobot ma’lumotlari topilmadi');
+    }
+    const W = 1240;
+    const H = 1754;
+    const margin = 56;
+    const contentW = W - margin * 2;
+    const settings = window.app?.settings || {};
+    const shopName = settings.shopName || 'DO‘KON POS';
+    const totals = report.totals || this.calculateSummaryTotals(report.items);
+    const pages = [];
+
+    const newPage = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = W;
+      canvas.height = H;
+      const c = canvas.getContext('2d');
+      c.fillStyle = '#ffffff';
+      c.fillRect(0, 0, W, H);
+      return { canvas, c };
+    };
+
+    const cols = [
+      { label: '№', w: 50, align: 'center' },
+      { label: 'Mahsulot', w: 410, align: 'left' },
+      { label: 'Narxi', w: 150, align: 'right' },
+      { label: 'Jami', w: 110, align: 'right' },
+      { label: 'Sotildi', w: 115, align: 'right' },
+      { label: 'Qoldiq', w: 115, align: 'right' },
+      { label: 'Jami summa', w: contentW - (50 + 410 + 150 + 110 + 115 + 115), align: 'right' }
+    ];
+
+    const drawHeader = (c) => {
+      let y = margin;
+      c.textAlign = 'left';
+      c.fillStyle = '#1e3a8a';
+      c.font = 'bold 28px "Segoe UI", Arial, sans-serif';
+      c.fillText(shopName, margin, y + 26);
+
+      c.fillStyle = '#0f172a';
+      c.font = 'bold 32px "Segoe UI", Arial, sans-serif';
+      c.fillText('DO‘KON KUNLIK SAVDO HISOBOTI', margin, y + 66);
+
+      c.textAlign = 'right';
+      c.fillStyle = '#334155';
+      c.font = 'bold 20px "Segoe UI", Arial, sans-serif';
+      c.fillText(`Sana: ${report.reportDate}`, W - margin, y + 28);
+      c.font = '19px "Segoe UI", Arial, sans-serif';
+      c.fillText(`Mas’ul sotuvchi: ${report.seller || '—'}`, W - margin, y + 60);
+
+      y += 84;
+      c.strokeStyle = '#0f172a';
+      c.lineWidth = 3;
+      c.beginPath();
+      c.moveTo(margin, y);
+      c.lineTo(W - margin, y);
+      c.stroke();
+      return y + 18;
+    };
+
+    const drawTblHead = (c, y) => {
+      const h = 40;
+      c.fillStyle = '#e2e8f0';
+      c.fillRect(margin, y, contentW, h);
+      c.strokeStyle = '#94a3b8';
+      c.lineWidth = 1.5;
+      c.strokeRect(margin, y, contentW, h);
+
+      c.fillStyle = '#0f172a';
+      c.font = 'bold 17px "Segoe UI", Arial, sans-serif';
+      let cx = margin;
+      cols.forEach((col, i) => {
+        if (i > 0) {
+          c.beginPath();
+          c.moveTo(cx, y);
+          c.lineTo(cx, y + h);
+          c.stroke();
+        }
+        c.textAlign = col.align;
+        const tx = col.align === 'center' ? cx + col.w / 2 : (col.align === 'right' ? cx + col.w - 10 : cx + 10);
+        c.fillText(col.label, tx, y + 26);
+        cx += col.w;
+      });
+      return y + h;
+    };
+
+    const trim = (c, txt, maxW) => {
+      let s = String(txt || '');
+      if (c.measureText(s).width <= maxW) return s;
+      while (s.length > 1 && c.measureText(s + '…').width > maxW) s = s.slice(0, -1);
+      return s + '…';
+    };
+
+    let page = newPage();
+    pages.push(page);
+    let y = drawHeader(page.c);
+    y = drawTblHead(page.c, y);
+
+    const rowH = 36;
+    const maxY = H - margin - 180;
+
+    report.items.forEach((it, idx) => {
+      if (y + rowH > maxY) {
+        page = newPage();
+        pages.push(page);
+        y = drawTblHead(page.c, margin);
+      }
+      const c = page.c;
+      c.fillStyle = idx % 2 === 1 ? '#f8fafc' : '#ffffff';
+      c.fillRect(margin, y, contentW, rowH);
+      c.strokeStyle = '#cbd5e1';
+      c.lineWidth = 1;
+      c.strokeRect(margin, y, contentW, rowH);
+
+      const vals = [
+        String(idx + 1),
+        it.name,
+        window.app.formatMoney(it.price),
+        String(it.totalQty),
+        String(it.soldQty),
+        String(it.remainingQty),
+        window.app.formatMoney(it.lineTotal)
+      ];
+
+      let cx = margin;
+      cols.forEach((col, i) => {
+        if (i > 0) {
+          c.beginPath();
+          c.moveTo(cx, y);
+          c.lineTo(cx, y + rowH);
+          c.stroke();
+        }
+        c.textAlign = col.align;
+        c.fillStyle = i === 4 ? '#166534' : (i === 5 ? '#1e40af' : '#0f172a');
+        c.font = (i === 1 || i === 6) ? 'bold 16px "Segoe UI", Arial, sans-serif' : '16px "Segoe UI", Arial, sans-serif';
+        const tx = col.align === 'center' ? cx + col.w / 2 : (col.align === 'right' ? cx + col.w - 10 : cx + 10);
+        c.fillText(trim(c, vals[i], col.w - 18), tx, y + 24);
+        cx += col.w;
+      });
+      y += rowH;
+    });
+
+    // Jami qatori
+    const c = page.c;
+    const footH = 42;
+    c.fillStyle = '#f1f5f9';
+    c.fillRect(margin, y, contentW, footH);
+    c.strokeStyle = '#0f172a';
+    c.lineWidth = 1.5;
+    c.strokeRect(margin, y, contentW, footH);
+
+    const footVals = ['', 'JAMI:', '', String(totals.totalIncoming), String(totals.totalSold), String(totals.totalRemaining), window.app.formatMoney(totals.totalAmount)];
+    let cx = margin;
+    cols.forEach((col, i) => {
+      c.textAlign = i === 1 ? 'right' : col.align;
+      c.fillStyle = '#0f172a';
+      c.font = 'bold 16.5px "Segoe UI", Arial, sans-serif';
+      const tx = i === 1 ? cx + col.w - 10 : (col.align === 'center' ? cx + col.w / 2 : (col.align === 'right' ? cx + col.w - 10 : cx + 10));
+      if (footVals[i]) c.fillText(trim(c, footVals[i], col.w - 14), tx, y + 27);
+      cx += col.w;
+    });
+
+    y += footH + 22;
+
+    // Pastki xulosa bloki
+    const boxH = 104;
+    c.fillStyle = '#f8fafc';
+    c.strokeStyle = '#cbd5e1';
+    c.lineWidth = 1.5;
+    c.fillRect(margin, y, contentW, boxH);
+    c.strokeRect(margin, y, contentW, boxH);
+
+    c.textAlign = 'left';
+    c.fillStyle = '#0f172a';
+    c.font = '18px "Segoe UI", Arial, sans-serif';
+    c.fillText(`Jami mahsulot turlari: ${totals.typesCount} ta`, margin + 20, y + 34);
+    c.fillText(`Jami kirim: ${totals.totalIncoming} dona`, margin + 390, y + 34);
+    c.fillText(`Jami sotilgan mahsulot: ${totals.totalSold} dona`, margin + 740, y + 34);
+    c.fillText(`Jami qolgan mahsulot: ${totals.totalRemaining} dona`, margin + 20, y + 76);
+
+    c.fillStyle = '#1e3a8a';
+    c.font = 'bold 23px "Segoe UI", Arial, sans-serif';
+    c.textAlign = 'right';
+    c.fillText(`Umumiy savdo summasi: ${window.app.formatMoney(totals.totalAmount)}`, W - margin - 20, y + 78);
+
+    return pages.map(p => p.canvas);
+  }
+
+  printDailyReport() {
+    if (!this.activeReportForView) {
+      window.app.showToast('Avval chop etiladigan hisobotni tanlang!', 'warning');
+      return;
+    }
+    document.body.classList.add('printing-ai-report');
+    window.print();
+    setTimeout(() => document.body.classList.remove('printing-ai-report'), 500);
+  }
+
+  // ================= 7. HISOBOTLAR TARIXI =================
+  getFilteredHistoryReports() {
+    const now = new Date();
+    const todayStr = this.getLocalDateStr(now);
+    const yesterdayDt = new Date(now);
+    yesterdayDt.setDate(yesterdayDt.getDate() - 1);
+    const yesterdayStr = this.getLocalDateStr(yesterdayDt);
+
+    const weekDt = new Date(now);
+    weekDt.setDate(weekDt.getDate() - 6);
+    const weekStartStr = this.getLocalDateStr(weekDt);
+
+    const monthStartStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+
+    return this.reports.filter(rep => {
+      const rDate = rep.reportDate || this.getLocalDateStr(new Date(rep.createdAt));
+
+      let matchDate = true;
+      if (this.historyFilterPeriod === 'today') matchDate = rDate === todayStr;
+      else if (this.historyFilterPeriod === 'yesterday') matchDate = rDate === yesterdayStr;
+      else if (this.historyFilterPeriod === 'week') matchDate = rDate >= weekStartStr;
+      else if (this.historyFilterPeriod === 'month') matchDate = rDate >= monthStartStr;
+      else if (this.historyFilterPeriod === 'custom') {
+        if (this.historyStart) matchDate = matchDate && (rDate >= this.historyStart);
+        if (this.historyEnd) matchDate = matchDate && (rDate <= this.historyEnd);
+      }
+
+      let matchSearch = true;
+      if (this.historySearch) {
+        const sellerMatch = (rep.seller || '').toLowerCase().includes(this.historySearch);
+        const dateMatch = rDate.includes(this.historySearch);
+        const itemMatch = (rep.items || []).some(i => (i.name || '').toLowerCase().includes(this.historySearch));
+        matchSearch = sellerMatch || dateMatch || itemMatch;
+      }
+
+      return matchDate && matchSearch;
+    });
+  }
+
+  renderHistoryList() {
+    const listEl = document.getElementById('aiHistoryList');
+    const countEl = document.getElementById('aiHistoryCount');
+    if (!listEl) return;
+
+    const filtered = this.getFilteredHistoryReports();
+    if (countEl) countEl.textContent = `${filtered.length} ta hisobot`;
+
+    if (filtered.length === 0) {
+      listEl.innerHTML = `
+        <div class="ai-history-empty">
+          <i class="fa-solid fa-folder-open"></i>
+          <p>Saqlangan AI hisobotlar topilmadi</p>
+          <small>Daftar rasmini yuklab tasdiqlaganingizda barcha hisobotlar shu yerda saqlanadi.</small>
+        </div>
+      `;
+      return;
+    }
+
+    listEl.innerHTML = filtered.map(rep => {
+      const totals = rep.totals || this.calculateSummaryTotals(rep.items);
+      const itemsPreview = (rep.items || []).slice(0, 4).map(i => `${i.name} (${i.soldQty})`).join(', ');
+
+      return `
+        <div class="ai-history-card">
+          <div class="ai-hist-thumb-wrap" onclick="window.aiReportManager.openHistoryReport('${rep.id}')">
+            ${rep.resolvedImage
+              ? `<img src="${rep.resolvedImage}" alt="Daftar rasmi">`
+              : `<div class="ai-hist-no-img"><i class="fa-solid fa-file-lines"></i></div>`
+            }
+          </div>
+
+          <div class="ai-hist-body">
+            <div class="ai-hist-top">
+              <strong><i class="fa-regular fa-calendar"></i> ${this.escapeHtml(rep.reportDate)}</strong>
+              <span class="ai-hist-seller"><i class="fa-solid fa-user"></i> ${this.escapeHtml(rep.seller || 'Sotuvchi')}</span>
+            </div>
+
+            <div class="ai-hist-stats">
+              <span>${totals.typesCount} tur</span>
+              <span>•</span>
+              <span>Kirim: ${totals.totalIncoming}</span>
+              <span>•</span>
+              <span class="text-success">Sotildi: ${totals.totalSold}</span>
+              <span>•</span>
+              <span class="text-primary">Qoldi: ${totals.totalRemaining}</span>
+            </div>
+
+            <div class="ai-hist-items">${this.escapeHtml(itemsPreview)}${rep.items.length > 4 ? '...' : ''}</div>
+            <div class="ai-hist-total">Umumiy savdo: <strong>${window.app.formatMoney(totals.totalAmount)}</strong></div>
+          </div>
+
+          <div class="ai-hist-actions">
+            <button type="button" class="btn-action view" title="Hisobotni ochish" onclick="window.aiReportManager.openHistoryReport('${rep.id}')">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+            <button type="button" class="btn-action edit" title="Tahrirlash" onclick="window.aiReportManager.editHistoryReport('${rep.id}')">
+              <i class="fa-solid fa-pen-to-square"></i>
+            </button>
+            <button type="button" class="btn-action print" title="PDF yuklab olish" onclick="window.aiReportManager.downloadHistoryPdf('${rep.id}')">
+              <i class="fa-solid fa-file-pdf"></i>
+            </button>
+            <button type="button" class="btn-action delete" title="O‘chirish" onclick="window.aiReportManager.deleteHistoryReport('${rep.id}')">
+              <i class="fa-solid fa-trash-can"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  openHistoryReport(reportId) {
+    const rep = this.reports.find(r => r.id === reportId);
+    if (!rep) return;
+    this.renderDailyReportPreview(rep);
+  }
+
+  async editHistoryReport(reportId) {
+    const rep = this.reports.find(r => r.id === reportId);
+    if (!rep) return;
+
+    this.editingReportId = rep.id;
+    this.currentImageFull = rep.resolvedImage || '';
+    this.currentImageThumb = rep.resolvedImage || '';
+    this.currentImageHash = rep.imageHash || '';
+    this.updateImagePreviewUI();
+
+    const dateInp = document.getElementById('aiReportDateInput');
+    const sellerInp = document.getElementById('aiSellerNameInput');
+    const stockChk = document.getElementById('aiUpdateStockCheckbox');
+    if (dateInp) dateInp.value = rep.reportDate || '';
+    if (sellerInp) sellerInp.value = rep.seller || '';
+    if (stockChk) stockChk.checked = false; // Eski hisobotni tahrirlaganda bugungi omborni bexosdan o'zgartirmaslik uchun
+
+    const catalog = await window.storageService.getProducts();
+    this.draftItems = (rep.items || []).map(it => this.normalizeAndCalculateRow({ ...it, confidence: 'high' }, catalog));
+    this.renderDraftTable();
+    this.showAiNotice('info', `${rep.reportDate} sanasidagi hisobot tahrirlash uchun ochildi.`);
+    document.getElementById('aiReviewSection')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  downloadHistoryPdf(reportId) {
+    const rep = this.reports.find(r => r.id === reportId);
+    if (rep) this.exportDailyPdf(rep);
+  }
+
+  async deleteHistoryReport(reportId) {
+    const rep = this.reports.find(r => r.id === reportId);
+    if (!rep) return;
+
+    const ok = await window.app.showConfirm({
+      title: 'Hisobotni o‘chirish',
+      message: `${rep.reportDate} sanasidagi (${window.app.formatMoney(rep.totals?.totalAmount || 0)}) saqlangan AI hisobotini o‘chirmoqchimisiz?`,
+      confirmText: 'Ha, o‘chirish',
+      cancelText: 'Bekor qilish',
+      type: 'danger'
+    });
+    if (!ok) return;
+
+    await window.storageService.deleteAiReport(reportId);
+    if (this.activeReportForView?.id === reportId) {
+      this.activeReportForView = null;
+      const card = document.getElementById('aiGeneratedReportCard');
+      if (card) card.style.display = 'none';
+    }
+    await this.loadData();
+    this.renderHistoryList();
+    window.app.showToast('Hisobot o‘chirildi.', 'info');
+  }
+
+  escapeHtml(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+}
+
+window.aiReportManager = new AiReportManager();
+
+
 /* ===== app.js ===== */
 /**
  * DO‘KON POS - Asosiy Dastur Boshqaruvchisi (App Controller)
@@ -9497,6 +11987,7 @@ class AppController {
     if (window.productsManager) await window.productsManager.init();
     if (window.historyManager) await window.historyManager.init();
     if (window.reportsManager) await window.reportsManager.init();
+    if (window.aiReportManager) await window.aiReportManager.init();
     if (window.paymentManager) window.paymentManager.init();
 
     this.loadSettingsForm();
@@ -9621,7 +12112,7 @@ class AppController {
   initBrowserHistory() {
     try {
       const initialHash = (window.location.hash || '').replace('#', '');
-      const validViews = ['pos', 'products', 'history', 'reports', 'settings'];
+      const validViews = ['pos', 'products', 'ai_report', 'history', 'reports', 'settings'];
       const startView = validViews.includes(initialHash) ? initialHash : 'pos';
 
       history.replaceState({ view: 'pos', category: 'all' }, '', '#pos');
@@ -9720,6 +12211,9 @@ class AppController {
         window.productsManager.renderCategoryFilter();
         window.productsManager.renderProductsTable();
       });
+    } else if (viewName === 'ai_report') {
+      window.aiReportManager?.setDefaultMetaInputs();
+      window.aiReportManager?.loadData().then(() => window.aiReportManager.renderHistoryList());
     } else if (viewName === 'history') {
       window.historyManager?.loadData().then(() => window.historyManager.renderSalesList());
     } else if (viewName === 'reports') {
@@ -9953,7 +12447,8 @@ class AppController {
     const stats = window.storageService.getStorageStats();
     const prods = window.posManager?.products?.length || 0;
     const sales = window.historyManager?.sales?.length || 0;
-    el.textContent = `Saqlangan: ${prods} ta mahsulot, ${sales} ta savdo • Band xotira: ${stats.usedKB} KB`;
+    const aiReps = window.aiReportManager?.reports?.length || 0;
+    el.textContent = `Saqlangan: ${prods} ta mahsulot, ${sales} ta savdo, ${aiReps} ta AI hisobot • Band xotira: ${stats.usedKB} KB`;
   }
 
   loadSettingsForm() {
@@ -10184,6 +12679,7 @@ class AppController {
         if (e.key === '3') { e.preventDefault(); this.switchView('history'); }
         if (e.key === '4') { e.preventDefault(); this.switchView('reports'); }
         if (e.key === '5') { e.preventDefault(); this.switchView('settings'); }
+        if (e.key === '6') { e.preventDefault(); this.switchView('ai_report'); }
       }
     });
   }
