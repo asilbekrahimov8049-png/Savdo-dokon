@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>DO‘KON POS — Professional Savdo va Kassa Tizimi</title>
 
-  <!-- FontAwesome Ikonkalar -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <!-- FontAwesome Ikonkalar (sahifani bloklamasdan yuklanadi) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" /></noscript>
 
   <!-- Asosiy POS uslublari -->
   <style>
@@ -3837,7 +3838,8 @@ html, body {
   background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 16px;
+  overflow-y: auto;
 }
 
 .exit-lock-screen.active {
@@ -3848,9 +3850,10 @@ html, body {
 .exit-lock-card {
   background: #ffffff;
   border-radius: 18px;
-  padding: 36px 28px;
+  padding: 32px 24px;
   max-width: 420px;
   width: 100%;
+  margin: auto;
   text-align: center;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.35);
   display: flex;
@@ -4421,6 +4424,31 @@ body.no-fa .fa-rotate-right::before { content: "↻"; }
 body.no-fa .fa-check-double::before { content: "✓"; }
 body.no-fa .fa-link::before { content: "🔗"; }
 body.no-fa .fa-keyboard::before { content: "⌨"; }
+body.no-fa .fa-cloud::before { content: "☁"; }
+body.no-fa .fa-rotate::before { content: "↻"; }
+
+.cloud-sync-btn {
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 700;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+.cloud-sync-btn.synced {
+  background: var(--green-light);
+  border-color: var(--green-border);
+  color: var(--green-hover);
+}
+.cloud-sync-btn.syncing {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+.cloud-sync-btn.warn {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+}
 
 /* ========================================================
    10. OMBOR QOLDIG'I VA AI RASM ORQALI HISOBOT (VIEW_AI_REPORT)
@@ -5112,6 +5140,11 @@ body.no-fa .fa-keyboard::before { content: "⌨"; }
       </div>
 
       <div class="header-right">
+        <button type="button" class="header-btn-quick cloud-sync-btn" id="cloudSyncBtn" title="Kompyuter va telefon bilan sinxronlash">
+          <i class="fa-solid fa-cloud"></i>
+          <span class="hide-on-sm" id="cloudSyncText">Sinxronlash</span>
+        </button>
+
         <button type="button" class="header-btn-quick" id="headerHomeBtn" onclick="window.app.goHome()" title="Bosh sahifaga qaytish" style="display: none;">
           <i class="fa-solid fa-house text-primary"></i>
           <span class="hide-on-xs">Bosh sahifa</span>
@@ -5622,6 +5655,19 @@ body.no-fa .fa-keyboard::before { content: "⌨"; }
           <div class="settings-side-col">
             <div class="settings-card">
               <h3 class="settings-card-title">
+                <i class="fa-solid fa-cloud"></i> Kompyuter ↔ Telefon Sinxronizatsiyasi
+              </h3>
+              <p class="settings-desc" id="cloudSyncSettingsStatus">
+                Kompyuterda kiritilgan mahsulot va savdolar telefonda ham avtomatik ko‘rinishi uchun bulut bazasi bilan ulanish.
+              </p>
+              <button type="button" class="btn-primary btn-success" id="settingsCloudSyncBtn" style="width: 100%; justify-content: center;">
+                <i class="fa-solid fa-rotate"></i>
+                <span>Hozir sinxronlash</span>
+              </button>
+            </div>
+
+            <div class="settings-card">
+              <h3 class="settings-card-title">
                 <i class="fa-solid fa-shield-halved"></i> Ma’lumotlar Zaxirasi (Saqlash / Tiklash)
               </h3>
               <p class="settings-desc">
@@ -6107,6 +6153,13 @@ class StorageService {
   constructor() {
     this.mediaStore = new MediaIDBStore();
     this.imageCache = {}; // idb://... kalitlarini tez olish uchun kesh
+    this.syncStatus = 'idle'; // 'idle' | 'syncing' | 'synced' | 'unconfigured' | 'offline' | 'error'
+    this.cloudConfigured = null;
+    this.lastSyncAt = '';
+    this._syncInFlight = null;
+    try {
+      this.lastSyncAt = localStorage.getItem('pos_last_cloud_sync') || '';
+    } catch (e) {}
     this.ensureInitialized();
   }
 
@@ -6241,11 +6294,225 @@ class StorageService {
 
   resolveImageSrc(imageValue, categoryId = 'somsa') {
     if (!imageValue) return this.getCategoryDefaultImage(categoryId);
+    if (imageValue.startsWith('cat://')) {
+      return this.getCategoryDefaultImage(imageValue.slice(6) || categoryId);
+    }
     if (imageValue.startsWith('idb://')) {
       const key = imageValue.slice(6);
       return this.imageCache[key] || this.getCategoryDefaultImage(categoryId);
     }
     return imageValue;
+  }
+
+  // ================= BULUT SINXRONIZATSIYA (KOMPYUTER ↔ TELEFON) =================
+
+  isCloudEnvSupported() {
+    return typeof window !== 'undefined' &&
+      (window.location.protocol === 'http:' || window.location.protocol === 'https:');
+  }
+
+  getCloudAuthToken() {
+    return 'cf2e9bde';
+  }
+
+  setCloudStatus(status) {
+    this.syncStatus = status;
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('pos-cloud-status', {
+        detail: {
+          status: this.syncStatus,
+          configured: this.cloudConfigured,
+          lastSyncAt: this.lastSyncAt
+        }
+      }));
+    }
+  }
+
+  async serializeProductsForCloud(products) {
+    const out = [];
+    for (const p of (products || [])) {
+      const { resolvedImage, ...rest } = p;
+      let img = resolvedImage || rest.image || '';
+      if (img.startsWith('idb://')) {
+        const key = img.slice(6);
+        img = this.imageCache[key] || (await this.mediaStore.getImage(key)) || '';
+      }
+      // Standart kategoriya rasmini qisqa belgi bilan jo'natamiz (trafikni tejash uchun)
+      const matchedCat = Object.keys(CAT_IMAGES).find(catKey => CAT_IMAGES[catKey] === img);
+      if (matchedCat) {
+        img = `cat://${matchedCat}`;
+      } else if (!img) {
+        img = `cat://${rest.category || 'somsa'}`;
+      }
+      out.push({ ...rest, image: img });
+    }
+    return out;
+  }
+
+  hydrateCloudProducts(cloudProducts, imagesMap = {}) {
+    return (cloudProducts || []).map(p => {
+      let img = p.image || '';
+      if (img.startsWith('cat://')) {
+        img = this.getCategoryDefaultImage(img.slice(6));
+      } else if (img.startsWith('cloud://')) {
+        const id = img.slice(8);
+        img = imagesMap[id] || this.getCategoryDefaultImage(p.category);
+      }
+      return {
+        ...p,
+        category: this.mapLegacyCategory(p.category, p.name),
+        image: img || this.getCategoryDefaultImage(p.category),
+        description: p.description || '',
+        unit: p.unit || 'dona'
+      };
+    });
+  }
+
+  async pushToCloud({ products = null, sales = null, settings = null, deletedImageIds = null } = {}) {
+    if (!this.isCloudEnvSupported()) return { ok: false, offline: true };
+    try {
+      const payload = {};
+      if (Array.isArray(products)) {
+        payload.products = await this.serializeProductsForCloud(products);
+      }
+      if (Array.isArray(sales)) {
+        payload.sales = sales;
+      }
+      if (settings && typeof settings === 'object') {
+        payload.settings = settings;
+      }
+      if (Array.isArray(deletedImageIds) && deletedImageIds.length > 0) {
+        payload.deletedImageIds = deletedImageIds;
+      }
+
+      this.setCloudStatus('syncing');
+      const resp = await fetch('/api/sync', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Pos-Auth': this.getCloudAuthToken()
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (resp.status === 503) {
+        this.cloudConfigured = false;
+        this.setCloudStatus('unconfigured');
+        return { ok: false, configured: false };
+      }
+      if (!resp.ok) {
+        this.setCloudStatus('error');
+        return { ok: false };
+      }
+
+      const data = await resp.json();
+      if (data.ok) {
+        this.cloudConfigured = true;
+        this.lastSyncAt = data.meta?.updatedAt || new Date().toISOString();
+        try { localStorage.setItem('pos_last_cloud_sync', this.lastSyncAt); } catch (e) {}
+        this.setCloudStatus('synced');
+        return { ok: true, data };
+      }
+      this.setCloudStatus('error');
+      return { ok: false };
+    } catch (err) {
+      this.setCloudStatus('offline');
+      return { ok: false, offline: true };
+    }
+  }
+
+  async syncWithCloud({ forcePush = false } = {}) {
+    if (!this.isCloudEnvSupported()) {
+      this.cloudConfigured = false;
+      this.setCloudStatus('unconfigured');
+      return { ok: false, configured: false };
+    }
+    if (this._syncInFlight) return this._syncInFlight;
+
+    this._syncInFlight = (async () => {
+      try {
+        this.setCloudStatus('syncing');
+
+        if (forcePush) {
+          const localProds = await this.getProducts();
+          const localSales = await this.getSales();
+          const localSettings = await this.getSettings();
+          return await this.pushToCloud({
+            products: localProds,
+            sales: localSales,
+            settings: localSettings
+          });
+        }
+
+        const resp = await fetch('/api/sync', {
+          method: 'GET',
+          headers: { 'X-Pos-Auth': this.getCloudAuthToken() },
+          cache: 'no-store'
+        });
+
+        if (resp.status === 503) {
+          this.cloudConfigured = false;
+          this.setCloudStatus('unconfigured');
+          return { ok: false, configured: false };
+        }
+        if (!resp.ok) {
+          this.setCloudStatus('error');
+          return { ok: false };
+        }
+
+        const data = await resp.json();
+        this.cloudConfigured = true;
+
+        const localProds = await this.getProducts();
+        const localSales = await this.getSales();
+        const localSettings = await this.getSettings();
+
+        const cloudProds = Array.isArray(data.products) ? data.products : [];
+        const cloudSales = Array.isArray(data.sales) ? data.sales : [];
+
+        // Agar bulut hali bo'sh bo'lsa, lekin ushbu qurilmada mahsulot/savdo bo'lsa — bulutga yuklaymiz
+        const shouldSeedCloud =
+          (!data.hasCloudData && (localProds.length > 0 || localSales.length > 0)) ||
+          (cloudProds.length === 0 && localProds.length > 0 && !this.lastSyncAt);
+
+        if (shouldSeedCloud) {
+          const pushRes = await this.pushToCloud({
+            products: localProds,
+            sales: localSales,
+            settings: localSettings
+          });
+          return { ...pushRes, action: 'pushed' };
+        }
+
+        // Bulutdan mahsulot, savdo va sozlamalarni mahalliy xotiraga olamiz
+        const hydratedProducts = this.hydrateCloudProducts(cloudProds, data.images || {});
+        await this.persistProductsList(hydratedProducts, false);
+
+        if (Array.isArray(data.sales)) {
+          this.safeSetItem('pos_sales', JSON.stringify(cloudSales));
+        }
+
+        if (data.settings && typeof data.settings === 'object') {
+          this.safeSetItem('pos_settings', JSON.stringify({ ...DEFAULT_SETTINGS, ...data.settings }));
+        }
+
+        this.lastSyncAt = data.meta?.updatedAt || new Date().toISOString();
+        try { localStorage.setItem('pos_last_cloud_sync', this.lastSyncAt); } catch (e) {}
+        this.setCloudStatus('synced');
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('pos-cloud-synced', { detail: { updatedAt: this.lastSyncAt } }));
+        }
+        return { ok: true, action: 'pulled', productsCount: hydratedProducts.length };
+      } catch (err) {
+        this.setCloudStatus('offline');
+        return { ok: false, offline: true };
+      } finally {
+        this._syncInFlight = null;
+      }
+    })();
+
+    return this._syncInFlight;
   }
 
   // ================= MAHSULOTLAR (PRODUCTS) =================
@@ -6269,7 +6536,7 @@ class StorageService {
     return products.find(p => p.id === id) || null;
   }
 
-  async persistProductsList(products) {
+  async persistProductsList(products, syncCloud = true, deletedImageIds = null) {
     // resolvedImage vaqtinchalik maydonini olib tashlaymiz
     const clean = products.map(({ resolvedImage, ...rest }) => rest);
     try {
@@ -6288,6 +6555,9 @@ class StorageService {
         }
       }
       this.safeSetItem('pos_products', JSON.stringify(offloaded));
+    }
+    if (syncCloud) {
+      this.pushToCloud({ products: clean, deletedImageIds }).catch(() => {});
     }
   }
 
@@ -6340,7 +6610,7 @@ class StorageService {
       await this.mediaStore.deleteImage(key);
     }
     products = products.filter(p => p.id !== id);
-    await this.persistProductsList(products);
+    await this.persistProductsList(products, true, [id]);
     return true;
   }
 
@@ -6414,6 +6684,7 @@ class StorageService {
       sale.stockAdjusted = true;
       this.safeSetItem('pos_sales', JSON.stringify(sales));
     }
+    this.pushToCloud({ sales }).catch(() => {});
     return sale;
   }
 
@@ -6433,6 +6704,7 @@ class StorageService {
     }
 
     this.safeSetItem('pos_sales', JSON.stringify(sales));
+    this.pushToCloud({ sales }).catch(() => {});
     return sale;
   }
 
@@ -6509,6 +6781,7 @@ class StorageService {
   async saveSettings(settings) {
     const fullSettings = { ...DEFAULT_SETTINGS, ...settings };
     this.safeSetItem('pos_settings', JSON.stringify(fullSettings));
+    this.pushToCloud({ settings: fullSettings }).catch(() => {});
     return fullSettings;
   }
 
@@ -6544,7 +6817,7 @@ class StorageService {
         ...p,
         category: this.mapLegacyCategory(p.category, p.name)
       }));
-      await this.persistProductsList(normalized);
+      await this.persistProductsList(normalized, false);
     }
     if (Array.isArray(categories)) {
       localStorage.setItem('pos_categories', JSON.stringify(DEFAULT_CATEGORIES));
@@ -6556,6 +6829,11 @@ class StorageService {
       this.safeSetItem('pos_settings', JSON.stringify({ ...DEFAULT_SETTINGS, ...settings }));
     }
 
+    await this.pushToCloud({
+      products: await this.getProducts(),
+      sales: await this.getSales(),
+      settings: await this.getSettings()
+    });
     return true;
   }
 
@@ -9897,7 +10175,91 @@ class AppController {
     this.initBrowserHistory();
     this.updateHeaderBackState();
     this.checkIconFontFallback();
+    this.initCloudSync();
     this.checkAuthOnLoad();
+  }
+
+  initCloudSync() {
+    window.addEventListener('pos-cloud-status', (e) => {
+      this.updateCloudSyncUI(e.detail?.status || window.storageService?.syncStatus);
+    });
+
+    window.addEventListener('pos-cloud-synced', async () => {
+      this.settings = await window.storageService.getSettings();
+      if (window.posManager) {
+        await window.posManager.loadData();
+        window.posManager.renderCategoryCards();
+        window.posManager.renderProducts();
+        window.posManager.updateDashboardMetrics();
+      }
+      if (window.productsManager) {
+        await window.productsManager.loadData();
+        window.productsManager.renderCategoryFilter();
+        window.productsManager.renderProductsTable();
+      }
+      if (window.historyManager) {
+        await window.historyManager.loadData();
+        window.historyManager.renderSalesList();
+      }
+      if (window.reportsManager) {
+        window.reportsManager.refresh();
+      }
+      this.loadSettingsForm();
+      this.updateShopHeader();
+      this.updateStorageInfo();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && this.isAuthenticated()) {
+        this.triggerCloudSync(false);
+      }
+    });
+
+    if (this.isAuthenticated()) {
+      this.triggerCloudSync(false);
+    }
+  }
+
+  async triggerCloudSync(manual = false) {
+    if (!window.storageService?.syncWithCloud) return;
+    const res = await window.storageService.syncWithCloud();
+    if (manual) {
+      if (res.ok) {
+        const msg = res.action === 'pushed'
+          ? 'Ma’lumotlar bulutga yuklandi! Endi boshqa qurilmalarda ham ko‘rinadi.'
+          : 'Barcha ma’lumotlar bulut bilan sinxronlandi!';
+        this.showToast(msg, 'success');
+      } else if (res.configured === false) {
+        this.showToast('Bulut bazasi (Upstash Redis) hali ulanmagan — Sozlamalar bo‘limida qo‘llanmani ko‘ring.', 'warning');
+      } else {
+        this.showToast('Internet bilan aloqa yo‘q yoki sinxronizatsiya xatosi.', 'error');
+      }
+    }
+  }
+
+  updateCloudSyncUI(status) {
+    const btn = document.getElementById('cloudSyncBtn');
+    const txt = document.getElementById('cloudSyncText');
+    const settingsStatus = document.getElementById('cloudSyncSettingsStatus');
+    const st = status || window.storageService?.syncStatus || 'idle';
+
+    const map = {
+      idle: { label: 'Sinxronlash', cls: '', desc: 'Bulut sinxronizatsiyasi tekshirilmoqda...' },
+      syncing: { label: 'Yangilanmoqda...', cls: 'syncing', desc: 'Kompyuter va telefon ma’lumotlari sinxronlanmoqda...' },
+      synced: { label: 'Sinxronlangan', cls: 'synced', desc: 'Kompyuter va telefon o‘rtasida avtomatik sinxronizatsiya faol!' },
+      unconfigured: { label: 'Faqat shu qurilma', cls: 'warn', desc: 'Bulut bazasi ulanmagan: kompyuter va telefonda bir xil ko‘rinishi uchun Vercel Storage (Upstash Redis) ulang.' },
+      offline: { label: 'Oflayn', cls: 'warn', desc: 'Internet aloqasi yo‘q — o‘zgarishlar hozircha shu qurilmada saqlanmoqda.' },
+      error: { label: 'Xato (Qayta urinish)', cls: 'warn', desc: 'Sinxronizatsiyada xatolik yuz berdi, qayta urinib ko‘ring.' }
+    };
+
+    const info = map[st] || map.idle;
+    if (btn) {
+      btn.classList.remove('syncing', 'synced', 'warn');
+      if (info.cls) btn.classList.add(info.cls);
+      btn.title = info.desc;
+    }
+    if (txt) txt.textContent = info.label;
+    if (settingsStatus) settingsStatus.textContent = info.desc;
   }
 
   hashPin(str) {
@@ -9961,6 +10323,7 @@ class AppController {
       document.getElementById('exitLockScreen')?.classList.remove('active');
       if (window.soundService) window.soundService.playSuccess();
       this.goHome();
+      this.triggerCloudSync(false);
       this.showToast(`Xush kelibsiz, ${AUTH_CONFIG.displayUser}! Kassa ishga tayyor.`, 'success');
     } else {
       if (window.soundService) window.soundService.playError();
@@ -10006,6 +10369,7 @@ class AppController {
     };
     apply();
     setTimeout(apply, 1000);
+    window.addEventListener('load', apply);
   }
 
   // Brauzer Back tugmasini qo'llab-quvvatlash
@@ -10484,7 +10848,9 @@ class AppController {
       });
     }
 
-    // Zaxira nusxa (Backup / Restore)
+    // Zaxira nusxa va bulut sinxronizatsiyasi
+    document.getElementById('cloudSyncBtn')?.addEventListener('click', () => this.triggerCloudSync(true));
+    document.getElementById('settingsCloudSyncBtn')?.addEventListener('click', () => this.triggerCloudSync(true));
     document.getElementById('exportBackupBtn')?.addEventListener('click', () => this.exportBackup());
 
     const importFileInput = document.getElementById('importBackupFileInput');
